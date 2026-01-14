@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "373500339760",
+    "project_id": "monney-planning-app",
+    "storage_bucket": "monney-planning-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:373500339760:android:673ced601c805c68a2eff5",
+        "android_client_info": {
+          "package_name": "com.example.money_planning_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvkQ7Mer55nZPZCJ5H1M772EfGXPPSwbA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

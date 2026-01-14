@@ -1,0 +1,326 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:money_planning_app/controllers/add_transactions_controller.dart';
+import 'package:money_planning_app/utils/base_colors.dart';
+import 'package:money_planning_app/utils/base_constants.dart';
+
+class AddTransactionScreen extends StatelessWidget {
+  AddTransactionScreen({super.key});
+
+  final controller = Get.put(AddTransactionsController());
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: ()=> FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        appBar: _buildAppBar(),
+        body: _buildBody(context),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() => AppBar(
+    title: Text(BaseConstants.addTransactionTitle)
+  );
+
+  Widget _buildBody(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.only(top: 30),
+    decoration: const BoxDecoration(color: BaseColors.primary),
+    child: Container(
+      padding: const EdgeInsets.only(top: 16),
+      decoration: const BoxDecoration(
+        color: BaseColors.background,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(30),
+          topRight: Radius.circular(30),
+        ),
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          spacing: 10,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+
+            // input amount
+            Form(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      BaseConstants.amountAddTran,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)
+                    ),
+                  ),
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      spacing: 10,
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            autofocus: false,
+                            style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: BaseColors.textPrimary),
+                            decoration: InputDecoration(
+                              hintText: BaseConstants.amountHint,
+                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              border: const OutlineInputBorder(
+                                borderSide: BorderSide.none, 
+                                borderRadius: BorderRadius.all(Radius.circular(20))
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        _buildDropDown(context)
+                      ],
+                    ),
+                  ),
+                ],
+              )
+            ),
+
+            // Select income or expense
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: SizedBox(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Transaction Type",
+                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    LayoutBuilder(
+                      builder: (context, c) {
+                        final half = c.maxWidth / 2;
+              
+                        return Obx(() {
+                          final sel = controller.selectedTransactionType.value;
+              
+                          Widget seg({
+                            required String text,
+                            required Color color,
+                            required bool selected,
+                          }) {
+                            return Container(
+                              width: half,
+                              height: 40,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: selected ? color : color.withAlpha(120),
+                              ),
+                              child: Text(
+                                text,
+                                style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: BaseColors.appBarTitle),
+                              ),
+                            );
+                          }
+              
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(16), // ✅ outer radius
+                            child: CupertinoSlidingSegmentedControl<int>(
+                              groupValue: sel,
+                              padding: EdgeInsets.zero,
+                              backgroundColor: Colors.transparent, // ✅ remove default bg
+                              thumbColor: Colors.transparent, // ✅ remove sliding thumb
+                              children: {
+                                0: seg(
+                                  text: "Income",
+                                  color: Colors.green,
+                                  selected: sel == 0,
+                                ),
+                                1: seg(
+                                  text: "Expense",
+                                  color: Colors.red,
+                                  selected: sel == 1,
+                                ),
+                              },
+                              onValueChanged: (v) {
+                                if (v != null) controller.setIndex(v);
+                              },
+                            ),
+                          );
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
+            /// Only for expense
+            Obx((){
+              if(!controller.isExpense){
+                return SizedBox.shrink();
+              }
+              return _inputForExpense(context);
+            }),
+
+            // input date
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: SizedBox(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Input Date",
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    InkWell(
+                      onTap: ()=> controller.opendDatePicker(),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withAlpha(50),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Obx((){
+                          return Text(
+                            controller.label,
+                            style: Theme.of(context).textTheme.bodyMedium!,
+                          );
+                        }),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // input purpose
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Form(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Purpose", style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold)),
+                    TextFormField(
+                      maxLines: 5,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.grey.shade100,
+                        hintText: "Purpose",
+                        border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.circular(16))
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+
+  /// Build dropdown for amount and currency
+  Widget _buildDropDown(BuildContext context) {
+    return Row(
+      children: [
+        Obx(() => Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 10,
+            vertical: 6,
+          ),
+          decoration: BoxDecoration(
+            color: BaseColors.primaryLight,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            controller.selectedCurrency.value,
+            style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: BaseColors.appBarTitle),
+          ),
+        )),
+
+        const SizedBox(width: 8),
+
+        // ✅ Dropdown
+        Obx(() => DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            borderRadius: BorderRadius.circular(20),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            value: controller.selectedCurrency.value,
+            icon: const Icon(Icons.arrow_drop_down),
+            selectedItemBuilder: (context) =>
+                    controller.currencies.map((e) => const SizedBox.shrink()).toList(),
+            items: controller.currencies
+                .map((c) => DropdownMenuItem<String>(
+                      value: c,
+                      child: Text(c),
+                    ))
+                .toList(),
+            onChanged: (val) {
+              if (val != null) controller.setCurrency(val);
+            },
+          ),
+        )),
+      ],
+    );
+  }
+
+  Widget _inputForExpense(BuildContext context){
+    return // Expense-only fields (Item Name + Payment Method)
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Item Name",
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium!
+                  .copyWith(fontWeight: FontWeight.bold),
+            ),
+            TextFormField(
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.grey.withAlpha(50),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                hintText: "Item name",
+                border: OutlineInputBorder(
+                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            Text(
+              "Payment Method",
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium!
+                  .copyWith(fontWeight: FontWeight.bold),
+            ),
+            TextFormField(
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.grey.withAlpha(50),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                hintText: "Cash / Card / Bank / ...",
+                border: OutlineInputBorder(
+                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+  }
+}
+
+
