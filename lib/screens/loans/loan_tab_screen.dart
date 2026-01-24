@@ -15,14 +15,20 @@ class LoanTabScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppbar, 
-      body: _buildBody(context)
+      appBar: _buildAppbar,
+      body: _buildBody(context),
     );
   }
 
-  get _buildAppbar => AppBar(
-    title: Text(BaseConstants.loanTitle)
-  );
+  PreferredSizeWidget get _buildAppbar => AppBar(
+        title: Text(BaseConstants.loanTitle),
+        actions: [
+          IconButton(
+            onPressed: () => controller.loadLoans(),
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
+      );
 
   Widget _buildBody(BuildContext context) {
     return Container(
@@ -30,71 +36,121 @@ class LoanTabScreen extends StatelessWidget {
       padding: const EdgeInsets.only(top: 30),
       color: BaseColors.primary,
       child: Container(
-        padding: EdgeInsets.only(top: 10),
+        padding: const EdgeInsets.only(top: 10),
         width: double.infinity,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: BaseColors.background,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(30),
-            topRight: Radius.circular(30)
-          )
+            topRight: Radius.circular(30),
+          ),
         ),
         child: Stack(
           children: [
             SingleChildScrollView(
               controller: controller.scrollController,
-              physics: AlwaysScrollableScrollPhysics(),
+              physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
                 children: [
-              
-                  Obx(()=> Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-                    color: Colors.transparent,
-                    child: CupertinoSlidingSegmentedControl<int>(
-                      groupValue: controller.selectedIndex.value,
-                      thumbColor: BaseColors.primary,
-                      children: {
-                        0: _buildSegment(context, BaseConstants.loanTypeAll, 0),
-                        1: _buildSegment(context, BaseConstants.loanTypeBank, 1),
-                        2: _buildSegment(context, BaseConstants.loanTypeMicro, 2),
-                        3: _buildSegment(context, BaseConstants.loanTypePersonal, 3)
-                      },
-                      onValueChanged: (value){
-                        if(value != null) {
-                          debugPrint("Index: $value");
-                          controller.selectedIndex.value = value;
-                        }
-                      }
-                    ),
-                  )),
-              
-                  Obx((){
-                    return Column(
-                      spacing: 4,
-                      children: List.generate(
-                        controller.filterdLoan.length, 
-                        (index){
-                          final loan = controller.filterdLoan[index];
-                          return Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                            child: LoanCardWidget(
-                              loanName: loan.name ?? "",
-                              amount: loan.originalAmount ?? 0, 
-                              lenderType: loan.lenderType ?? "", 
-                              paidPercent: loan.paidPercent ?? 0, 
-                              nextRepayment: loan.nextRepaymentDate ?? DateTime.now(),
-                            )
-                          );
-                        }
+                  // Segmented control
+                  Obx(
+                    () => Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 6),
+                      color: Colors.transparent,
+                      child: CupertinoSlidingSegmentedControl<int>(
+                        groupValue: controller.selectedIndex.value,
+                        thumbColor: BaseColors.primary,
+                        children: {
+                          0: _buildSegment(
+                              context, BaseConstants.loanTypeAll, 0),
+                          1: _buildSegment(
+                              context, BaseConstants.loanTypeBank, 1),
+                          2: _buildSegment(
+                              context, BaseConstants.loanTypeMicro, 2),
+                          3: _buildSegment(
+                              context, BaseConstants.loanTypePersonal, 3),
+                        },
+                        onValueChanged: (value) {
+                          if (value != null) controller.setIndex(value);
+                        },
                       ),
+                    ),
+                  ),
+
+                  // Content
+                  Obx(() {
+                    if (controller.isLoading.value) {
+                      return const Padding(
+                        padding: EdgeInsets.only(top: 30),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+
+                    final err = controller.error.value;
+                    if (err != null && err.isNotEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            Text(
+                              err,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(color: Colors.red),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 10),
+                            ElevatedButton(
+                              onPressed: () => controller.loadLoans(),
+                              child: const Text("Retry"),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    final list = controller.filteredLoan; // ✅ fixed getter name
+
+                    if (list.isEmpty) {
+                      return const Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                        child: Text("No loans yet."),
+                      );
+                    }
+
+                    return Column(
+                      children: List.generate(list.length, (index) {
+                        final loan = list[index];
+
+                        return Container(
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 4),
+                          child: LoanCardWidget(
+                            loanId: loan.id!,                 // ✅ required
+                            loanName: loan.name,
+                            amount: loan.currentBalance,
+                            lenderType: loan.lenderType,
+                            paidPercent: loan.paidPercent,
+                            nextRepayment: loan.nextRepaymentDate,
+                            currencyCode: loan.currencyCode,   // ✅ required
+                          )
+                        );
+                      }),
                     );
-                  })
+                  }),
+
+                  const SizedBox(height: 60), // space for floating button
                 ],
               ),
             ),
-            Obx((){
-              return Positioned(
+
+            // Floating add button (hide on scroll)
+            Obx(
+              () => Positioned(
                 right: 20,
                 bottom: 16,
                 child: AnimatedSlide(
@@ -102,33 +158,36 @@ class LoanTabScreen extends StatelessWidget {
                   duration: const Duration(milliseconds: 200),
                   child: IconButton(
                     style: IconButton.styleFrom(
-                      backgroundColor: BaseColors.primary
+                      backgroundColor: BaseColors.primary,
                     ),
-                    onPressed: (){
-                      Get.toNamed(RoutesName.addLoan);
-                    }, 
-                    icon: Icon(Icons.add, color: BaseColors.background,)
+                    onPressed: () async {
+                      final result = await Get.toNamed(RoutesName.addLoan); // ✅ no arguments for add
+                      if (result == true) {
+                        controller.loadLoans(); // ✅ refresh only when saved
+                      }
+                    },
+                    icon: const Icon(Icons.add, color: BaseColors.background),
                   ),
-                )
-              );
-            })
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSegment(BuildContext context, String text, int index){
+  Widget _buildSegment(BuildContext context, String text, int index) {
     final isSelected = controller.selectedIndex.value == index;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Text(
-        text, 
+        text,
         style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-          color: isSelected ? BaseColors.background : BaseColors.textPrimary,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal
-        )
-      )
+              color: isSelected ? BaseColors.background : BaseColors.textPrimary,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
+      ),
     );
   }
 }

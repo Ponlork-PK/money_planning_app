@@ -2,100 +2,118 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/models/loans_model.dart';
+import 'package:money_planning_app/services/api_service.dart';
 
 class LoanController extends GetxController {
+  final ApiService _api = ApiService();
 
   late ScrollController scrollController;
 
   final isShowButtons = true.obs;
   final selectedIndex = 0.obs;
 
+  final isLoading = false.obs;
+  final error = RxnString();
+
+  final loans = <Loan>[].obs;
+
   @override
   void onInit() {
     super.onInit();
     scrollController = ScrollController();
     scrollController.addListener(_onScroll);
+
+    ever<int>(selectedIndex, (_) {
+      // UI filter only; no API call needed
+    });
+
+    loadLoans();
   }
 
   @override
-  void dispose() {
-    super.dispose();
+  void onClose() {
     scrollController.removeListener(_onScroll);
     scrollController.dispose();
+    super.onClose();
   }
 
-  final loans = <Loan>[
-    Loan(
-      id: 001,
-      name: "ACLIDA Bank",
-      lenderType: "Bank",
-      originalAmount: 1000.00,
-      nextRepaymentDate: DateTime.now(),
-      paidPercent: 0.28, // 28%
-    ),
-    Loan(
-      id: 002,
-      name: "ABA Bank",
-      lenderType: "Bank",
-      originalAmount: 1000.00,
-      nextRepaymentDate: DateTime.now(),
-      paidPercent: 0.90,
-    ),
-    Loan(
-      id: 003,
-      name: "Hattha Bank",
-      lenderType: "Bank",
-      originalAmount: 1000.00,
-      nextRepaymentDate: DateTime.now(),
-      paidPercent: 0.50,
-    ),
-    Loan(
-      id: 004,
-      name: "Micro Finance",
-      lenderType: "Micro",
-      originalAmount: 1000.00,
-      nextRepaymentDate: DateTime.now(),
-      paidPercent: 0.40,
-    ),
-    Loan(
-      id: 005,
-      name: "Family",
-      lenderType: "Personal",
-      originalAmount: 1000.00,
-      nextRepaymentDate: DateTime.now(),
-      paidPercent: 0.30,
-    ),
-    Loan(
-      id: 006,
-      name: "ACLIDA Bank",
-      lenderType: "Bank",
-      originalAmount: 1000.00,
-      nextRepaymentDate: DateTime.now(),
-      paidPercent: 0.15,
-    ),
-  ].obs;
-  List<Loan> get filterdLoan {
-    switch(selectedIndex.value){
+  void setIndex(int idx) => selectedIndex.value = idx;
+
+  List<Loan> get filteredLoan {
+    final idx = selectedIndex.value;
+
+    bool match(Loan l, String want) =>
+        l.lenderType.toLowerCase() == want.toLowerCase() ||
+        (want.toLowerCase() == 'family' && l.lenderType.toLowerCase() == 'personal');
+
+    switch (idx) {
       case 1:
-        return loans.where((loan) => loan.lenderType == "Bank").toList();
+        return loans.where((l) => match(l, 'Bank')).toList();
       case 2:
-        return loans.where((loan) => loan.lenderType == "Micro").toList();
+        return loans.where((l) => match(l, 'Micro')).toList();
       case 3:
-        return loans.where((loan) => loan.lenderType == "Personal").toList();
+        return loans.where((l) => match(l, 'Family')).toList();
       default:
         return loans;
     }
   }
 
-  void _onScroll(){
-    if(scrollController.position.userScrollDirection == ScrollDirection.reverse) {
-      if(isShowButtons.value) {
-        isShowButtons.value = false;
+  Future<void> loadLoans() async {
+    isLoading.value = true;
+    error.value = null;
+
+    try {
+      final baseLoans = await _api.fetchLoans();
+      final ids = baseLoans.map((e) => e.id).whereType<String>().toList();
+
+      final payments = await _api.fetchPaymentsForLoans(ids);
+
+      // group payments by loan_id
+      final map = <String, List<LoanPayment>>{};
+      for (final p in payments) {
+        final lid = p.loanId;
+        if (lid == null) continue;
+        map.putIfAbsent(lid, () => []).add(p);
       }
-    } else{
-      if(!isShowButtons.value) {
-        isShowButtons.value = true;
-      }
+
+      final updated = baseLoans.map((loan) {
+        final lid = loan.id ?? '';
+        final list = map[lid] ?? const <LoanPayment>[];
+
+        final paid = list.where((p) => p.isPaid).toList();
+        final unpaid = list.where((p) => !p.isPaid).toList()
+          ..sort((a, b) => a.date.compareTo(b.date));
+
+        final paidSum = paid.fold<double>(0.0, (s, p) => s + p.amount);
+        final currentBalance = (loan.originalAmount - paidSum) < 0 ? 0.0 : (loan.originalAmount - paidSum);
+
+        final paidPercent = loan.originalAmount <= 0 ? 0.0 : (paidSum / loan.originalAmount);
+
+        final nextRepay = unpaid.isEmpty ? null : unpaid.first.date;
+
+        return loan.copyWith(
+          currentBalance: currentBalance,
+          paidPercent: paidPercent,
+          nextRepaymentDate: nextRepay,
+          schedules: unpaid,
+          histories: paid,
+        );
+      }).toList();
+
+      loans.assignAll(updated);
+    } catch (e) {
+      error.value = e.toString();
+      loans.clear();
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  void _onScroll() {
+    if (scrollController.position.userScrollDirection == ScrollDirection.reverse) {
+      if (isShowButtons.value) isShowButtons.value = false;
+    } else {
+      if (!isShowButtons.value) isShowButtons.value = true;
     }
   }
 }

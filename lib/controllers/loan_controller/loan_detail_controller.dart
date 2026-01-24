@@ -1,96 +1,143 @@
-// loan_details_controller.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/models/loans_model.dart';
+import 'package:money_planning_app/services/api_service.dart';
 
 class LoanDetailsController extends GetxController {
+  final ApiService _api = ApiService();
 
   late ScrollController scrollController;
   final isShowButtons = true.obs;
 
   final loan = Rxn<Loan>();
+  final payments = <LoanPayment>[].obs;
+
   final isLoading = false.obs;
+  final error = RxnString();
+
+  late final String loanId;
 
   @override
   void onInit() {
     super.onInit();
-    _loadLoan();
+
     scrollController = ScrollController();
     scrollController.addListener(_onScroll);
+
+    // ✅ get loanId from navigation
+    final arg = Get.arguments;
+    final paramId = Get.parameters['id'];
+
+    if (paramId != null && paramId.isNotEmpty) {
+      loanId = paramId;
+    } else if (arg is String && arg.isNotEmpty) {
+      loanId = arg;
+    } else if (arg is Map && (arg['loanId']?.toString().isNotEmpty ?? false)) {
+      loanId = arg['loanId'].toString();
+    } else {
+      loanId = '';
+    }
+
+    loadLoanDetails();
   }
 
   @override
-  void dispose() {
-    super.dispose();
+  void onClose() {
     scrollController.removeListener(_onScroll);
     scrollController.dispose();
+    super.onClose();
   }
 
-  Future<void> _loadLoan() async {
+  Future<void> loadLoanDetails() async {
+    if (loanId.isEmpty) {
+      error.value = "Missing loan id";
+      return;
+    }
+
     isLoading.value = true;
+    error.value = null;
 
-    await Future.delayed(const Duration(milliseconds: 400));
-    final samplePayments = [
-      LoanPayment(
-        label: 'Payment #3',
-        amount: 200.0,
-        date: DateTime(2025, 7, 30),
-        status: PaymentStatus.pending,
-      ),
-      LoanPayment(
-        label: 'Payment #2',
-        amount: 200.0,
-        date: DateTime(2025, 7, 30),
-        status: PaymentStatus.paid,
-      ),
-      LoanPayment(
-        label: 'Payment #1',
-        amount: 200.0,
-        date: DateTime(2025, 7, 30),
-        status: PaymentStatus.paid,
-      ),
-    ];
+    try {
+      // 1) fetch loan
+      final all = await _api.fetchLoans();
+      final found = all.firstWhere((l) => l.id == loanId, orElse: () => throw "Loan not found");
+      // 2) fetch payments
+      final payList = await _api.fetchPaymentsForLoans([loanId]);
 
-    loan.value = Loan(
-      id: 001,
-      name: 'Micro',
-      currentBalance: 1000.0,
-      originalAmount: 2500.0,
-      interestRate: 0.015,
-      termMonths: 12,
-      startDate: DateTime(2025, 1, 6),
-      endDate: DateTime(2025, 7, 2),
-      paidPercent: 0.26,
-      schedules: samplePayments,
-      histories: samplePayments, // demo
-    );
+      // sort by payment_no
+      payList.sort((a, b) => a.paymentNo.compareTo(b.paymentNo));
 
-    isLoading.value = false;
-  }
+      // compute summary
+      final paid = payList.where((p) => p.isPaid).toList();
+      final unpaid = payList.where((p) => !p.isPaid).toList()
+        ..sort((a, b) => a.date.compareTo(b.date));
 
-  void _onScroll(){
-    if(scrollController.position.userScrollDirection == ScrollDirection.reverse) {
-      if(isShowButtons.value) {
-        isShowButtons.value = false;
-      }
-    } else{
-      if(!isShowButtons.value) {
-        isShowButtons.value = true;
-      }
+      final paidSum = paid.fold<double>(0.0, (s, p) => s + p.amount);
+      final currentBalance = (found.originalAmount - paidSum) < 0 ? 0.0 : (found.originalAmount - paidSum);
+
+      final paidPercent = found.originalAmount <= 0 ? 0.0 : (paidSum / found.originalAmount);
+      final nextDate = unpaid.isEmpty ? null : unpaid.first.date;
+
+      loan.value = found.copyWith(
+        currentBalance: currentBalance,
+        paidPercent: paidPercent,
+        nextRepaymentDate: nextDate,
+        schedules: unpaid,
+        histories: paid,
+      );
+
+      payments.assignAll(payList);
+    } catch (e) {
+      error.value = e.toString();
+      loan.value = null;
+      payments.clear();
+    } finally {
+      isLoading.value = false;
     }
   }
 
-  void onSettleEarly() {
-    // business logic or navigation
+  void _onScroll() {
+    if (scrollController.position.userScrollDirection == ScrollDirection.reverse) {
+      if (isShowButtons.value) isShowButtons.value = false;
+    } else {
+      if (!isShowButtons.value) isShowButtons.value = true;
+    }
+  }
+
+  // ✅ toggle paid/unpaid
+  Future<void> togglePaymentPaid(LoanPayment p) async {
+    if (p.id == null) return;
+
+    try {
+      await _api.markLoanPaymentPaid(paymentId: p.id!, isPaid: !p.isPaid);
+      await loadLoanDetails();
+    } catch (e) {
+      Get.snackbar("Update failed", e.toString());
+    }
+  }
+
+  // ✅ settle early
+  Future<void> onSettleEarly() async {
+    if (loanId.isEmpty) return;
+
+    try {
+      await _api.settleLoanEarly(loanId);
+      await loadLoanDetails();
+      Get.snackbar("Success", "Loan settled");
+    } catch (e) {
+      Get.snackbar("Failed", e.toString());
+    }
   }
 
   void onEditLoan() {
-    // navigation to edit screen
+    // Get.toNamed(RoutesName.editLoan, arguments: {"loanId": loanId});
+  }
+
+  // helpers for formatting
+  String formatAmount(double v, String currency) {
+    final cur = currency.toUpperCase().trim();
+    if (cur == 'KHR') return v.toStringAsFixed(0);
+    return v.toStringAsFixed(2);
   }
 }
-
-
-
-
-

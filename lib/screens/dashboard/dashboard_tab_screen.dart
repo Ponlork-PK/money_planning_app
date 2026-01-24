@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:money_planning_app/controllers/dash_board_controller.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
 import 'package:money_planning_app/utils/base_constants.dart';
 import 'package:money_planning_app/utils/routes_name.dart';
 import 'package:money_planning_app/widgets/item_list_widget.dart';
 
 class DashboardTabScreen extends StatelessWidget {
-  const DashboardTabScreen({super.key});
+  DashboardTabScreen({super.key});
+
+  final controller = Get.put(DashboardController());
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +68,11 @@ class DashboardTabScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(BaseConstants.balanceDashboard, style: Theme.of(context).textTheme.bodyLarge!.copyWith(color: BaseColors.textPrimary, fontWeight: FontWeight.bold)),
-                      Text(BaseConstants.amountDashboard, style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: BaseColors.textPrimary))
+                      Obx(() => Text(
+                        "\$${controller.summary.value.balance.toStringAsFixed(2)}",
+                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: BaseColors.textPrimary),
+                      )),
+
                     ],
                   ),
                 ),
@@ -78,7 +85,11 @@ class DashboardTabScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(BaseConstants.incomeDashboard, style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: BaseColors.income, fontWeight: FontWeight.bold)),
-                          Text(BaseConstants.incomeAmountDash, style: Theme.of(context).textTheme.bodySmall!.copyWith(color: BaseColors.income))
+                          Obx(() => Text(
+                            "\$${controller.summary.value.income.toStringAsFixed(2)}",
+                            style: Theme.of(context).textTheme.bodySmall!.copyWith(color: BaseColors.income),
+                          )),
+
                         ],
                       ),
                     ),
@@ -90,7 +101,11 @@ class DashboardTabScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(BaseConstants.expenseDashboard, style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: BaseColors.expense, fontWeight: FontWeight.bold)),
-                          Text(BaseConstants.expenseAmountDash, style: Theme.of(context).textTheme.bodySmall!.copyWith(color: BaseColors.expense))
+                          Obx(() => Text(
+                            "\$${controller.summary.value.expense.toStringAsFixed(2)}",
+                            style: Theme.of(context).textTheme.bodySmall!.copyWith(color: BaseColors.expense),
+                          )),
+
                         ],
                       ),
                     ),
@@ -109,8 +124,11 @@ class DashboardTabScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: (){
-                      Get.toNamed(RoutesName.addTransaction);
+                    onPressed: () async {
+                      final result = await Get.toNamed(RoutesName.addTransaction);
+                      if (result == true) {
+                        controller.refreshDashboard();
+                      }
                     },
                     child: Row(
                       spacing: 10,
@@ -148,22 +166,34 @@ class DashboardTabScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(14)
               ),
               child: SingleChildScrollView(
-                child: Column(
-                  children: List.generate(14, (index) {
-                    return Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      width: double.infinity,
-                      child: GestureDetector(
-                        onTap: () => Get.toNamed(RoutesName.transactionDetail),
-                        child: ItemListWidget(
-                          icons: Icons.shopping_cart_outlined,
-                          itemName: "Shopping",
-                          price: "\$50",
+                child: Obx(() {
+                  return Column(
+                    children: controller.recent.map((tx) {
+                      final sign = tx.type == 'expense' ? '-' : '+';
+                      final price = "$sign${tx.currencyCode} ${tx.amount.toStringAsFixed(2)}";
+
+                      return GestureDetector(
+                        onTap: ()async{
+                          final refresh = await Get.toNamed(RoutesName.transactionDetail, arguments: tx.id);
+                          if(refresh){
+                            controller.refreshDashboard();
+                          }
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          width: double.infinity,
+                          child: ItemListWidget(
+                            icons: Icons.shopping_cart_outlined, // map icon later using category icon
+                            itemName: tx.itemName ?? 'Income',
+                            price: price,
+                            color: tx.type == 'expense' ? BaseColors.expense : BaseColors.income,
+                          ),
                         ),
-                      ),
-                    );
-                  }),
-                ),
+                      );
+                    }).toList(),
+                  );
+                }),
+
               ),
             ),
           )

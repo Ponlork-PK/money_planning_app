@@ -1,11 +1,15 @@
 import 'dart:async';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:money_planning_app/services/api_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../services/api_service.dart';
 
 class AuthController extends GetxController {
   final ApiService _api = ApiService();
+
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
   // UI state
   final isLoading = false.obs;
@@ -66,16 +70,16 @@ class AuthController extends GetxController {
       }
     } on AuthException catch (e) {
       errorMessage.value = e.message;
-      Get.snackbar('Auth Error', e.message);
+      Get.snackbar('Auth Error', e.message, snackPosition: SnackPosition.BOTTOM);
     } catch (e) {
       errorMessage.value = e.toString();
-      Get.snackbar('Error', e.toString());
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
     } finally {
       isLoading.value = false;
     }
   }
 
-  Future<void> signIn({
+  Future<bool> signIn({
     required String email,
     required String password,
   }) async {
@@ -88,13 +92,16 @@ class AuthController extends GetxController {
       session.value = res.session;
       user.value = res.user;
 
-      Get.snackbar('Welcome', 'Signed in successfully!');
+      Get.snackbar('Welcome', 'Signed in successfully!', snackPosition: SnackPosition.BOTTOM);
+      return true;
     } on AuthException catch (e) {
       errorMessage.value = e.message;
-      Get.snackbar('Auth Error', e.message);
+      Get.snackbar('Auth Error', e.message, snackPosition: SnackPosition.BOTTOM);
+      return false;
     } catch (e) {
       errorMessage.value = e.toString();
-      Get.snackbar('Error', e.toString());
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+      return false;
     } finally {
       isLoading.value = false;
     }
@@ -109,10 +116,10 @@ class AuthController extends GetxController {
       session.value = null;
       user.value = null;
 
-      Get.snackbar('Signed out', 'See you again!');
+      Get.snackbar('Signed out', 'See you again!', snackPosition: SnackPosition.BOTTOM);
     } catch (e) {
       errorMessage.value = e.toString();
-      Get.snackbar('Error', e.toString());
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
     } finally {
       isLoading.value = false;
     }

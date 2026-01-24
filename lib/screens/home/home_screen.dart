@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/controllers/bottom_nav_controller.dart';
 import 'package:money_planning_app/screens/loans/loan_tab_screen.dart';
-import 'package:money_planning_app/screens/settings/settings_tab_screen.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
 import 'package:money_planning_app/screens/dashboard/dashboard_tab_screen.dart';
 import 'package:money_planning_app/screens/report/report_tab_screen.dart';
@@ -16,11 +15,11 @@ class HomeScreen extends StatelessWidget {
     final controller = Get.put(BottomNavController());
 
     final pages = [
-      const DashboardTabScreen(),
-      const TransactionTabScreen(),
+      DashboardTabScreen(),
+      TransactionTabScreen(),
       ReportTabScreen(),
       LoanTabScreen(),
-      SettingsTabScreen(),
+      // SettingsTabScreen(),
     ];
 
     return Obx(() {
@@ -55,10 +54,10 @@ class HomeScreen extends StatelessWidget {
               icon: Icon(Icons.account_balance_wallet_outlined),
               label: 'Loan',
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings_outlined),
-              label: 'Settings',
-            ),
+            // BottomNavigationBarItem(
+            //   icon: Icon(Icons.settings_outlined),
+            //   label: 'Settings',
+            // ),
           ],
         ),
       );

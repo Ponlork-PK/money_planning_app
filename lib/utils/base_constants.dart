@@ -18,6 +18,7 @@ class BaseConstants {
 
   /// Add Transactions
   static const String addTransactionTitle = "Add Transaction";
+  static const String updateTransaction = "Update Transaction";
   static const String amountAddTran = "Amount";
   static const String amountHint = "\$0.00";
   static const String transactionsType = "Transaction Type";

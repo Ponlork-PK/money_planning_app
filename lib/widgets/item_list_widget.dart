@@ -5,11 +5,13 @@ class ItemListWidget extends StatelessWidget {
   final IconData icons;
   final String itemName;
   final String price;
+  final Color color;
   const ItemListWidget({
     super.key,
     required this.icons,
     required this.itemName,
-    required this.price
+    required this.price,
+    required this.color
   });
 
   @override
@@ -25,7 +27,7 @@ class ItemListWidget extends StatelessWidget {
           ),
           Text(itemName, style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: BaseColors.textPrimary, fontWeight: FontWeight.bold)),
           const Spacer(),
-          Text(price, style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: BaseColors.textPrimary, fontWeight: FontWeight.bold))
+          Text(price, style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: color, fontWeight: FontWeight.bold))
         ],
       ),
     );

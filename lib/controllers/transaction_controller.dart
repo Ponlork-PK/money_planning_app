@@ -1,162 +1,66 @@
-// import 'package:get/get.dart';
-// import '../services/api_service.dart';
-// import '../models/transaction_model.dart';
+import 'package:get/get.dart';
+import 'package:money_planning_app/models/transaction_item_model.dart';
+import 'package:money_planning_app/services/api_service.dart';
 
-// class TransactionController extends GetxController {
-//   final apiService = ApiService();
+class TransactionTabController extends GetxController {
+  final _api = ApiService();
 
-//   final transactions = <TransactionModel>[].obs;
-//   final isLoading = false.obs;
-//   final errorMessage = ''.obs;
-//   final selectedMonth = DateTime.now().obs;
+  final isLoading = false.obs;
+  final error = ''.obs;
 
-//   @override
-//   void onInit() {
-//     super.onInit();
-//     loadTransactions();
-//     watchTransactionsRealtime();
-//   }
+  final transactions = <TransactionItemModel>[].obs;
 
-//   Future<void> loadTransactions({int limit = 20, int offset = 0}) async {
-//     isLoading.value = true;
-//     errorMessage.value = '';
+  // summary by selected currency
+  final currency = 'USD'.obs;
+  final income = 0.0.obs;
+  final expense = 0.0.obs;
+  final balance = 0.0.obs;
 
-//     try {
-//       final response =
-//           await apiService.getTransactions(limit: limit, offset: offset);
-//       if (response.success) {
-//         transactions.value = response.data ?? [];
-//       } else {
-//         errorMessage.value = response.message ?? 'Failed to load transactions';
-//       }
-//     } catch (e) {
-//       errorMessage.value = e.toString();
-//     } finally {
-//       isLoading.value = false;
-//     }
-//   }
+  @override
+  void onInit() {
+    super.onInit();
+    refreshTransactions();
+  }
 
-//   Future<void> loadTransactionsByDateRange({
-//     required DateTime startDate,
-//     required DateTime endDate,
-//     String? type,
-//   }) async {
-//     isLoading.value = true;
-//     errorMessage.value = '';
+  Future<void> refreshTransactions() async {
+    try {
+      isLoading.value = true;
+      error.value = '';
 
-//     try {
-//       final response = await apiService.getTransactionsByDateRange(
-//         startDate: startDate,
-//         endDate: endDate,
-//         type: type,
-//       );
+      final list = await _api.fetchAllTransactions();
+      transactions.assignAll(list);
 
-//       if (response.success) {
-//         transactions.value = response.data ?? [];
-//       } else {
-//         errorMessage.value =
-//             response.message ?? 'Failed to load transactions';
-//       }
-//     } catch (e) {
-//       errorMessage.value = e.toString();
-//     } finally {
-//       isLoading.value = false;
-//     }
-//   }
+      _calcSummary();
+    } catch (e) {
+      error.value = e.toString().replaceAll('Exception: ', '');
+    } finally {
+      isLoading.value = false;
+    }
+  }
 
-//   Future<bool> addTransaction({
-//     required String categoryId,
-//     required String type,
-//     required double amount,
-//     required String currency,
-//     required String title,
-//     required DateTime transactionDate,
-//     String? description,
-//     String? paymentMethod,
-//   }) async {
-//     isLoading.value = true;
-//     errorMessage.value = '';
+  void setCurrency(String c) {
+    currency.value = c;
+    _calcSummary();
+  }
 
-//     try {
-//       final response = await apiService.createTransaction(
-//         categoryId: categoryId,
-//         type: type,
-//         amount: amount,
-//         currency: currency,
-//         title: title,
-//         transactionDate: transactionDate,
-//         description: description,
-//         paymentMethod: paymentMethod,
-//       );
+  void _calcSummary() {
+    final cur = currency.value;
 
-//       if (response.success) {
-//         transactions.insert(0, response.data!);
-//         return true;
-//       } else {
-//         errorMessage.value = response.message ?? 'Failed to add transaction';
-//         return false;
-//       }
-//     } catch (e) {
-//       errorMessage.value = e.toString();
-//       return false;
-//     } finally {
-//       isLoading.value = false;
-//     }
-//   }
+    double inc = 0;
+    double exp = 0;
 
-//   Future<bool> updateTransaction({
-//     required String id,
-//     required Map<String, dynamic> data,
-//   }) async {
-//     isLoading.value = true;
-//     try {
-//       final response = await apiService.updateTransaction(id: id, data: data);
-//       if (response.success) {
-//         await loadTransactions();
-//         return true;
-//       }
-//       errorMessage.value = response.message ?? 'Update failed';
-//       return false;
-//     } catch (e) {
-//       errorMessage.value = e.toString();
-//       return false;
-//     } finally {
-//       isLoading.value = false;
-//     }
-//   }
+    for (final tx in transactions) {
+      if (tx.currencyCode != cur) continue;
 
-//   Future<bool> deleteTransaction(String id) async {
-//     try {
-//       final response = await apiService.deleteTransaction(id);
-//       if (response.success) {
-//         transactions.removeWhere((t) => t.id == id);
-//         return true;
-//       }
-//       errorMessage.value = response.message ?? 'Delete failed';
-//       return false;
-//     } catch (e) {
-//       errorMessage.value = e.toString();
-//       return false;
-//     }
-//   }
+      if (tx.type == 'income') {
+        inc += tx.amount;
+      } else {
+        exp += tx.amount;
+      }
+    }
 
-//   Future<void> searchTransactions(String query) async {
-//     isLoading.value = true;
-//     try {
-//       final response = await apiService.searchTransactions(query);
-//       if (response.success) {
-//         transactions.value = response.data ?? [];
-//       }
-//     } catch (e) {
-//       errorMessage.value = e.toString();
-//     } finally {
-//       isLoading.value = false;
-//     }
-//   }
-
-//   void watchTransactionsRealtime() {
-//     apiService.watchTransactions().listen((data) {
-//       transactions.value = data;
-//     });
-//   }
-// }
+    income.value = inc;
+    expense.value = exp;
+    balance.value = inc - exp;
+  }
+}

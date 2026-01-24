@@ -1,26 +1,31 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:money_planning_app/models/report_model.dart';
-import 'package:money_planning_app/utils/base_colors.dart';
+import 'package:money_planning_app/models/category_model.dart';
+import 'package:money_planning_app/models/transaction_item_model.dart';
+import 'package:money_planning_app/services/api_service.dart';
+import 'package:money_planning_app/services/report_pdf_service.dart';
+import 'package:pdf/pdf.dart';
+import 'package:printing/printing.dart';
 
 enum ReportPeriod { daily, weekly, monthly }
 
 class ReportController extends GetxController {
-  final selectedIndex = 0.obs;
-  final transactions = <TxModel>[].obs;
+  final ApiService _api = ApiService();
+  final ReportPdfService _pdfService = ReportPdfService();
+  final isExporting = false.obs;
 
-  // ✅ FIX: make IDs match your TxModel.categoryId values
-  final categories = const <CategoryModel>[
-    CategoryModel(id: "salary", name: "Salary", color: BaseColors.income), // ✅ added
-    CategoryModel(id: "loan", name: "Loan", color: Colors.orange),
-    CategoryModel(id: "food", name: "Food", color: Colors.redAccent),
-    CategoryModel(id: "transport", name: "Transport", color: Colors.blue),
-    CategoryModel(id: "shopping", name: "Shopping", color: Colors.purple),
-    CategoryModel(id: "another", name: "Another", color: BaseColors.income), // ✅ fixed spelling/id
-  ];
+  final selectedIndex = 0.obs; // 0 daily, 1 weekly, 2 monthly
+  final isLoading = false.obs;
+  final error = RxnString();
 
-  // ---------- Period helpers ----------
+  final categories = <CategoryModel>[].obs;
+  final transactions = <TransactionItemModel>[].obs;
+
+  /// ✅ Top 5 (income + expense)
+  final topTransactions = <TransactionItemModel>[].obs;
+
   ReportPeriod get period {
     final i = selectedIndex.value;
     if (i == 1) return ReportPeriod.weekly;
@@ -33,7 +38,7 @@ class ReportController extends GetxController {
     return DateTime(now.year, now.month, now.day);
   }
 
-  DateTime get _fromDate {
+  DateTime get fromDateLocal {
     final today = _todayStart;
     switch (period) {
       case ReportPeriod.daily:
@@ -46,30 +51,81 @@ class ReportController extends GetxController {
     }
   }
 
-  List<TxModel> get periodTxs {
-    final from = _fromDate;
-    return transactions.where((t) => !t.date.isBefore(from)).toList();
-  }
+  DateTime get toDateLocal => DateTime.now();
 
-  // ---------- Totals ----------
-  double get incomeTotal => periodTxs
-      .where((t) => t.type == TxType.income)
+  bool _isIncome(TransactionItemModel t) =>
+      t.type.toLowerCase().trim() == 'income';
+
+  bool _isExpense(TransactionItemModel t) =>
+      t.type.toLowerCase().trim() == 'expense';
+
+  String get _primaryCurrency => 'USD';  // Or fetch from user prefs/settings
+
+  bool _sameCurrency(TransactionItemModel t) =>
+      (t.currencyCode).toUpperCase() == _primaryCurrency.toUpperCase();
+
+  // -------------------------
+  // Totals
+  // -------------------------
+  double get incomeTotal => transactions
+      .where((t) => _isIncome(t) && _sameCurrency(t))
       .fold<double>(0.0, (sum, t) => sum + t.amount);
 
-  double get expenseTotal => periodTxs
-      .where((t) => t.type == TxType.expense)
+  double get expenseTotal => transactions
+      .where((t) => _isExpense(t) && _sameCurrency(t))
       .fold<double>(0.0, (sum, t) => sum + t.amount);
 
-  // ---------- Spending by category (expenses only) ----------
-  Map<String, double> get expenseByCategory {
-    final map = <String, double>{};
-    for (final t in periodTxs.where((t) => t.type == TxType.expense)) {
-      map[t.categoryId] = (map[t.categoryId] ?? 0.0) + t.amount;
+  // -------------------------
+  // Expense by category
+  // -------------------------
+  Map<int, double> get expenseByCategory {
+    final map = <int, double>{};
+    for (final t in transactions.where(_isExpense)) {
+      final cid = t.categoryId;
+      if (cid == null) continue;
+      map[cid] = (map[cid] ?? 0.0) + t.amount;
     }
     return map;
   }
 
-  // ---------- Pie chart sections ----------
+  // -------------------------
+  // Category helpers
+  // -------------------------
+  CategoryModel? categoryOfId(int? id) {
+    if (id == null) return null;
+    try {
+      return categories.firstWhere((c) => c.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String categoryName(int? id) =>
+      categoryOfId(id)?.name ?? 'Other';
+
+  // -------------------------
+  // Colors for pie (no color column in DB)
+  // stable deterministic palette by category id
+  // -------------------------
+  static const List<Color> _palette = [
+    Colors.blue,
+    Colors.red,
+    Colors.green,
+    Colors.orange,
+    Colors.purple,
+    Colors.teal,
+    Colors.indigo,
+    Colors.pink,
+    Colors.cyan,
+    Colors.brown,
+  ];
+
+  Color colorOfCategory(int categoryId) =>
+      _palette[categoryId.abs() % _palette.length];
+
+  // -------------------------
+  // Pie chart sections (expenses only)
+  // -------------------------
   List<PieChartSectionData> get sections {
     final data = expenseByCategory;
     final total = data.values.fold<double>(0.0, (a, b) => a + b);
@@ -88,16 +144,20 @@ class ReportController extends GetxController {
 
     final out = <PieChartSectionData>[];
 
-    // stable order based on categories list
+    // stable order by categories list
     for (final c in categories) {
-      final value = data[c.id] ?? 0.0;
+      final cid = c.id;
+      if (cid == null) continue;
+
+      final value = data[cid] ?? 0.0;
       if (value <= 0.0) continue;
 
       final percent = (value / total) * 100.0;
+
       out.add(
         PieChartSectionData(
           value: value,
-          color: c.color,
+          color: colorOfCategory(cid),
           title: "${percent.toStringAsFixed(0)}%",
           radius: 45,
           titleStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
@@ -105,263 +165,114 @@ class ReportController extends GetxController {
       );
     }
 
-    // ✅ If your expense categories are not in `categories`, still show them
-    // (optional safety)
+    // fallback if categories missing but data exists
     if (out.isEmpty && data.isNotEmpty) {
       for (final e in data.entries) {
         final percent = (e.value / total) * 100.0;
-        out.add(PieChartSectionData(
-          value: e.value,
-          color: Colors.grey,
-          title: "${percent.toStringAsFixed(0)}%",
-          radius: 45,
-          titleStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-        ));
+        out.add(
+          PieChartSectionData(
+            value: e.value,
+            color: colorOfCategory(e.key),
+            title: "${percent.toStringAsFixed(0)}%",
+            radius: 45,
+            titleStyle:
+                const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          ),
+        );
       }
     }
 
     return out;
   }
 
-  // ---------- Top transactions (top 5 expenses) ----------
-  List<TxModel> get topExpenses {
-    final list = periodTxs.where((t) => t.type == TxType.expense).toList();
-    list.sort((a, b) => b.amount.compareTo(a.amount));
-    return list.take(5).toList();
-  }
 
-  CategoryModel categoryOf(String id) => categories.firstWhere(
-        (c) => c.id == id,
-        orElse: () => const CategoryModel(
-          id: "other",
-          name: "Other",
-          color: Colors.grey,
-        ),
+  Future<void> exportPdf() async {
+    if (isLoading.value) return;
+
+    isExporting.value = true;
+    try {
+      // Ensure latest data for current period
+      await loadReport();
+
+      final bytes = await _pdfService.buildReportPdfBytes(
+        title: "Money Planning Report",
+        periodLabel: periodLabel,
+        from: fromDateLocal,
+        to: toDateLocal,
+        categories: categories,
+        expenseByCategory: expenseByCategory,
+        allTransactions: transactions,
+        categoryColor: pdfColorOfCategory,
       );
 
+      final filename = "report_${periodLabel.toLowerCase()}.pdf";
+
+      try {
+        // ✅ best for mobile (share/save dialog)
+        await Printing.sharePdf(bytes: bytes, filename: filename);
+      } on MissingPluginException {
+        // ✅ fallback for unsupported platforms (web/desktop/simulator issues)
+        await Printing.layoutPdf(onLayout: (_) async => bytes, name: filename);
+      }
+    } catch (e) {
+      Get.snackbar("Export failed", e.toString());
+    } finally {
+      isExporting.value = false;
+    }
+  }
+
+
+  // -------------------------
+  // Lifecycle / Load
+  // -------------------------
   @override
   void onInit() {
     super.onInit();
-    _seedDummyData();
+
+    // reload when period changes
+    ever<int>(selectedIndex, (_) => loadReport());
+
+    loadReport();
   }
 
   void setIndex(int idx) => selectedIndex.value = idx;
 
-  void setTransactions(List<TxModel> items) => transactions.assignAll(items);
-  void addTransaction(TxModel item) => transactions.add(item);
+  Future<void> loadReport() async {
+    isLoading.value = true;
+    error.value = null;
 
-  void _seedDummyData() {
-    final now = DateTime.now();
-    transactions.assignAll([
-      TxModel(
-        id: "1",
-        title: "Salary",
-        amount: 1200,
-        type: TxType.income,
-        categoryId: "salary", // ✅ now exists in categories
-        date: now.subtract(const Duration(days: 2)),
-      ),
-      TxModel(
-        id: "2",
-        title: "Loan",
-        amount: 40,
-        type: TxType.expense,
-        categoryId: "loan",
-        date: now,
-      ),
-      TxModel(
-        id: "3",
-        title: "Lunch",
-        amount: 8,
-        type: TxType.expense,
-        categoryId: "food",
-        date: now.subtract(const Duration(days: 1)),
-      ),
-      TxModel(
-        id: "4",
-        title: "Taxi",
-        amount: 12,
-        type: TxType.expense,
-        categoryId: "transport",
-        date: now.subtract(const Duration(days: 5)),
-      ),
-      TxModel(
-        id: "5",
-        title: "Shopping",
-        amount: 65,
-        type: TxType.expense,
-        categoryId: "shopping",
-        date: now.subtract(const Duration(days: 12)),
-      ),
-      TxModel(
-        id: "6",
-        title: "Football fee",
-        amount: 20,
-        type: TxType.expense,
-        categoryId: "another", // ✅ fixed id
-        date: now,
-      ),
-      TxModel(
-        id: "7",
-        title: "Salary",
-        amount: 200,
-        type: TxType.income,
-        categoryId: "salary",
-        date: now.subtract(const Duration(days: 2)),
-      ),
-      TxModel(
-        id: "8",
-        title: "Buy a car",
-        amount: 200,
-        type: TxType.expense,
-        categoryId: "shopping",
-        date: now.subtract(const Duration(days: 2)),
-      ),
-      TxModel(
-        id: "9",
-        title: "Sell a car",
-        amount: 200,
-        type: TxType.income,
-        categoryId: "salary",
-        date: now,
-      ),
-    ]);
+    try {
+      final from = fromDateLocal;
+      final to = toDateLocal;
+
+      final cats = await _api.fetchCategories();
+      categories.assignAll(cats);
+
+      final txs = await _api.fetchTransactionsForReport(fromLocal: from, toLocal: to);
+      transactions.assignAll(txs);
+
+      final top = await _api.fetchTop5TransactionsForReport(fromLocal: from, toLocal: to);
+      topTransactions.assignAll(top);
+    } catch (e) {
+      error.value = e.toString();
+      categories.clear();
+      transactions.clear();
+      topTransactions.clear();
+    } finally {
+      isLoading.value = false;
+    }
   }
+
+
+  String get periodLabel {
+    if (period == ReportPeriod.weekly) return "Weekly";
+    if (period == ReportPeriod.monthly) return "Monthly";
+    return "Daily";
+  }
+
+  PdfColor pdfColorOfCategory(int categoryId) {
+    final c = colorOfCategory(categoryId); // your existing Color
+    return PdfColor.fromInt(c.value);
+  }
+
 }
-
-
-
-
-// import 'package:fl_chart/fl_chart.dart';
-// import 'package:flutter/material.dart';
-// import 'package:get/get.dart';
-// import 'package:money_planning_app/controllers/category_controller.dart';
-// import 'package:money_planning_app/controllers/transaction_controller.dart';
-// import 'package:money_planning_app/models/category_model.dart';
-// import 'package:money_planning_app/models/transaction_model.dart';
-// import 'package:money_planning_app/services/api_service.dart';
-
-// class ReportController extends GetxController {
-//   final apiService = ApiService();
-//   final transactionController = TransactionController(); // for transactions
-//   final categoryController = CategoryController(); // for categories
-
-//   // View-required properties
-//   final selectedIndex = 0.obs;
-//   final monthlyStats = Rxn<Map<String, dynamic>>();
-//   final spendingByCategory = <Map<String, dynamic>>[].obs;
-//   final transactions = <TransactionModel>[].obs;
-//   final categories = <CategoryModel>[].obs;
-//   final selectedMonth = DateTime.now().obs;
-//   final isLoading = false.obs;
-//   final errorMessage = ''.obs;
-
-//   @override
-//   void onInit() {
-//     super.onInit();
-//     loadData();
-//   }
-
-//   Future<void> loadData() async {
-//     await Future.wait([
-//       loadMonthlyStats(),
-//       loadSpendingByCategory(),
-//       loadTransactions(),
-//       loadCategories(),
-//     ]);
-//     // updateCharts();
-//   }
-
-//   Future<void> loadMonthlyStats() async {
-//     isLoading.value = true;
-//     try {
-//       final response = await apiService.getMonthlyStats(selectedMonth.value);
-//       if (response.success) {
-//         monthlyStats.value = response.data;
-//       }
-//     } catch (e) {
-//       errorMessage.value = e.toString();
-//     } finally {
-//       isLoading.value = false;
-//     }
-//   }
-
-//   Future<void> loadSpendingByCategory() async {
-//     try {
-//       final response = await apiService.getSpendingByCategory(selectedMonth.value);
-//       if (response.success) {
-//         spendingByCategory.value = response.data ?? [];
-//       }
-//     } catch (e) {
-//       errorMessage.value = e.toString();
-//     }
-//   }
-
-//   Future<void> loadTransactions() async {
-//     final response = await apiService.getTransactionsByDateRange(
-//       startDate: DateTime(selectedMonth.value.year, selectedMonth.value.month, 1),
-//       endDate: DateTime(selectedMonth.value.year, selectedMonth.value.month + 1, 0),
-//       type: 'expense',
-//     );
-//     if (response.success) {
-//       transactions.value = response.data ?? [];
-//     }
-//   }
-
-//   Future<void> loadCategories() async {
-//     final response = await apiService.getCategories(type: 'expense');
-//     if (response.success) {
-//       categories.value = response.data ?? [];
-//     }
-//   }
-
-//   void setIndex(int index) {
-//     selectedIndex.value = index;
-//     // Load data for selected period (implement daily/weekly logic)
-//     loadData();
-//   }
-
-//   void changeMonth(DateTime newMonth) {
-//     selectedMonth.value = newMonth;
-//     loadData();
-//   }
-
-//   // VIEW-REQUIRED GETTERS
-//   double get incomeTotal => monthlyStats.value?['total_income']?.toDouble() ?? 0.0;
-//   double get expenseTotal => monthlyStats.value?['total_expense']?.toDouble() ?? 0.0;
-
-//   Map<String, double> get expenseByCategory {
-//     final map = <String, double>{};
-//     for (var tx in transactions) {
-//       map[tx.categoryId] = (map[tx.categoryId] ?? 0) + tx.amount;
-//     }
-//     return map;
-//   }
-
-//   List<PieChartSectionData> get sections {
-//     final total = expenseTotal;
-//     return categories.take(5).map((cat) {
-//       final amount = expenseByCategory[cat.id] ?? 0.0;
-//       final percentage = total > 0 ? (amount / total) : 0.0;
-//       return PieChartSectionData(
-//         color: cat.color != null ? Color(int.parse(cat.color!.replaceAll('#', '0xFF'))) : Colors.blue,
-//         value: percentage,
-//         radius: 60,
-//         title: '${(percentage * 100).toInt()}%',
-//         titleStyle: const TextStyle(fontSize: 12, color: Colors.white),
-//       );
-//     }).toList();
-//   }
-
-//   List<TransactionModel> get topExpenses {
-//     return transactions
-//         .where((tx) => tx.type == 'expense')
-//         .toList()
-//       ..sort((a, b) => b.amount.compareTo(a.amount));
-//   }
-
-//   CategoryModel categoryOf(String categoryId) {
-//     return categories.firstWhere((c) => c.id == categoryId, 
-//         orElse: () => CategoryModel(id: '', userId: '', name: 'Unknown', type: 'expense'));
-//   }
-// }

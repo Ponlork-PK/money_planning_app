@@ -1,46 +1,50 @@
 class CategoryModel {
-  final String id;
-  final String userId;
-  final String name;
-  final String type; // income, expense
-  final String? color;
-  final String? iconName;
-  final bool? isDefault;
-  final DateTime? createdAt;
+  final int? id;
+  final String? userId;
 
-  CategoryModel({
-    required this.id,
-    required this.userId,
+  final String name;
+  final String? icon;
+
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  const CategoryModel({
+    this.id,
+    this.userId,
     required this.name,
-    required this.type,
-    this.color,
-    this.iconName,
-    this.isDefault,
+    this.icon,
     this.createdAt,
+    this.updatedAt,
   });
 
-  factory CategoryModel.fromMap(Map<String, dynamic> map) {
+  static DateTime? _parseDate(dynamic v) {
+    if (v == null) return null;
+    if (v is String) return DateTime.tryParse(v)?.toLocal();
+    if (v is DateTime) return v.toLocal();
+    return null;
+  }
+
+  factory CategoryModel.fromMap(Map<String, dynamic> json) {
     return CategoryModel(
-      id: map['id'] ?? '',
-      userId: map['user_id'] ?? '',
-      name: map['name'] ?? '',
-      type: map['type'] ?? 'expense',
-      color: map['color'],
-      iconName: map['icon_name'],
-      isDefault: map['is_default'],
-      createdAt: map['created_at'] != null
-          ? DateTime.parse(map['created_at'])
-          : null,
+      id: (json['id'] as num?)?.toInt(),
+      userId: json['user_id']?.toString(),
+      name: (json['name'] ?? '').toString(),
+      icon: json['icon']?.toString(),
+      createdAt: _parseDate(json['created_at']),
+      updatedAt: _parseDate(json['updated_at']),
     );
   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      'user_id': userId,
-      'name': name,
-      'type': type,
-      'color': color,
-      'icon_name': iconName,
-    };
-  }
+  /// INSERT
+  Map<String, dynamic> toCreateMap({required String userId}) => {
+        'user_id': userId,
+        'name': name,
+        'icon': icon,
+      };
+
+  /// UPDATE
+  Map<String, dynamic> toUpdateMap() => {
+        'name': name,
+        'icon': icon,
+      };
 }

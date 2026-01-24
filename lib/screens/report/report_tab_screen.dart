@@ -1,9 +1,7 @@
 import 'dart:math' as math;
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'package:money_planning_app/controllers/report_controller.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
 import 'package:money_planning_app/utils/base_constants.dart';
@@ -16,7 +14,17 @@ class ReportTabScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(BaseConstants.reportTitle)),
+      appBar: AppBar(
+        title: Text(BaseConstants.reportTitle),
+        actions: [
+          Obx(() => IconButton(
+            onPressed: controller.isExporting.value ? null : () => controller.exportPdf(),
+            icon: controller.isExporting.value
+                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.file_open_outlined),
+          ))
+        ],
+      ),
       body: _buildBody(context),
     );
   }
@@ -43,8 +51,7 @@ class ReportTabScreen extends StatelessWidget {
               Obx(
                 () => Container(
                   width: double.infinity,
-                  margin:
-                      const EdgeInsets.only(left: 16, right: 16, top: 10),
+                  margin: const EdgeInsets.only(left: 16, right: 16, top: 10),
                   color: Colors.transparent,
                   child: CupertinoSlidingSegmentedControl<int>(
                     groupValue: controller.selectedIndex.value,
@@ -61,23 +68,43 @@ class ReportTabScreen extends StatelessWidget {
                 ),
               ),
 
-              // Rebuild when tab changes (or data changes)
+              // loading / error line
+              Obx(() {
+                if (controller.isLoading.value) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    child: LinearProgressIndicator(minHeight: 2),
+                  );
+                }
+                final err = controller.error.value;
+                if (err != null) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    child: Text(
+                      err,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              }),
+
               Obx(() => _buildIncomeExpenseChart(context)),
 
-              _buildPieChart(context),
+              // _buildPieChart(context),
 
               Padding(
                 padding: const EdgeInsets.only(left: 16.0, top: 6),
                 child: Text(
                   "Top Transactions",
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium!
-                      .copyWith(fontWeight: FontWeight.bold, color: BaseColors.textPrimary),
+                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: BaseColors.textPrimary,
+                      ),
                 ),
               ),
 
-              Obx(() => _buildTopExpense()),
+              Obx(() => _buildTopTransactions()),
               const SizedBox(height: 16),
             ],
           ),
@@ -93,8 +120,7 @@ class ReportTabScreen extends StatelessWidget {
       child: Text(
         text,
         style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-              color:
-                  isSelected ? BaseColors.background : BaseColors.textPrimary,
+              color: isSelected ? BaseColors.background : BaseColors.textPrimary,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
       ),
@@ -106,7 +132,6 @@ class ReportTabScreen extends StatelessWidget {
     final double expense = controller.expenseTotal;
 
     const double maxBarHeight = 120.0;
-
     final double maxVal = math.max(income, expense).toDouble();
 
     final double incomeH =
@@ -114,7 +139,6 @@ class ReportTabScreen extends StatelessWidget {
 
     final double expenseH =
         (maxVal == 0.0) ? 0.0 : (expense / maxVal) * maxBarHeight;
-
 
     return Card(
       elevation: 2,
@@ -126,10 +150,10 @@ class ReportTabScreen extends StatelessWidget {
           children: [
             Text(
               "Income vs. Expense",
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium!
-                  .copyWith(fontWeight: FontWeight.bold, color: BaseColors.textPrimary),
+              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: BaseColors.textPrimary,
+                  ),
             ),
             const SizedBox(height: 16),
             Row(
@@ -165,7 +189,7 @@ class ReportTabScreen extends StatelessWidget {
           duration: const Duration(milliseconds: 800),
           curve: Curves.easeInOut,
           width: 50,
-          height: math.max(6, height), // keep visible even if very small
+          height: math.max(6, height),
           decoration: BoxDecoration(
             color: color,
             borderRadius: const BorderRadius.only(
@@ -181,109 +205,106 @@ class ReportTabScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPieChart(BuildContext context) {
-    return Obx(() {
-      // ✅ expenses only map from controller
-      final expenseMap = controller.expenseByCategory;
+  // Widget _buildPieChart(BuildContext context) {
+  //   return Obx(() {
+  //     final expenseMap = controller.expenseByCategory; // Map<int,double>
 
-      // ✅ show only categories that are expense & active, and exclude salary
-      final legendCategories = controller.categories.where((c) {
-        if (c.id == "salary") return false; // hide salary
-        final v = expenseMap[c.id] ?? 0.0;
-        return v > 0.0; // show only categories that exist in this period
-      }).toList();
+  //     final legendCategories = controller.categories.where((c) {
+  //       final cid = c.id;
+  //       if (cid == null) return false;
+  //       final v = expenseMap[cid] ?? 0.0;
+  //       return v > 0.0;
+  //     }).toList();
 
-      return Card(
-        elevation: 2,
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                "Spending by category",
-                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: BaseColors.textPrimary,
-                    ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    height: 170,
-                    width: 170,
-                    child: PieChart(
-                      PieChartData(
-                        centerSpaceRadius: 32,
-                        sections: controller.sections, // already expense-only
-                        sectionsSpace: 1,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
+  //     return Card(
+  //       elevation: 2,
+  //       margin: const EdgeInsets.symmetric(horizontal: 16),
+  //       child: Padding(
+  //         padding: const EdgeInsets.symmetric(vertical: 12.0),
+  //         child: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           crossAxisAlignment: CrossAxisAlignment.center,
+  //           children: [
+  //             Text(
+  //               "Spending by category",
+  //               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+  //                     fontWeight: FontWeight.bold,
+  //                     color: BaseColors.textPrimary,
+  //                   ),
+  //             ),
+  //             const SizedBox(height: 16),
+  //             Row(
+  //               mainAxisAlignment: MainAxisAlignment.center,
+  //               crossAxisAlignment: CrossAxisAlignment.center,
+  //               children: [
+  //                 SizedBox(
+  //                   height: 170,
+  //                   width: 170,
+  //                   child: PieChart(
+  //                     PieChartData(
+  //                       centerSpaceRadius: 32,
+  //                       sections: controller.sections,
+  //                       sectionsSpace: 1,
+  //                     ),
+  //                   ),
+  //                 ),
+  //                 const SizedBox(width: 8),
+  //                 if (legendCategories.isEmpty)
+  //                   Padding(
+  //                     padding: const EdgeInsets.only(left: 8.0),
+  //                     child: Text(
+  //                       "No expenses",
+  //                       style: Theme.of(context)
+  //                           .textTheme
+  //                           .bodySmall
+  //                           ?.copyWith(color: Colors.black54),
+  //                     ),
+  //                   )
+  //                 else
+  //                   Column(
+  //                     crossAxisAlignment: CrossAxisAlignment.start,
+  //                     mainAxisAlignment: MainAxisAlignment.center,
+  //                     children: legendCategories.map((c) {
+  //                       final cid = c.id!;
+  //                       final value = expenseMap[cid] ?? 0.0;
 
-                  // ✅ legend: only active expense categories
-                  if (legendCategories.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: Text(
-                        "No expenses",
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(color: Colors.black54),
-                      ),
-                    )
-                  else
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: legendCategories.map((c) {
-                        final value = expenseMap[c.id] ?? 0.0;
+  //                       return Padding(
+  //                         padding: const EdgeInsets.symmetric(vertical: 4),
+  //                         child: Row(
+  //                           children: [
+  //                             CircleAvatar(
+  //                               backgroundColor: controller.colorOfCategory(cid),
+  //                               radius: 7,
+  //                             ),
+  //                             const SizedBox(width: 6),
+  //                             Text(
+  //                               "${c.name} (\$${value.toStringAsFixed(0)})",
+  //                               style: const TextStyle(
+  //                                 fontSize: 14,
+  //                                 color: Colors.black87,
+  //                               ),
+  //                             ),
+  //                           ],
+  //                         ),
+  //                       );
+  //                     }).toList(),
+  //                   ),
+  //               ],
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     );
+  //   });
+  // }
 
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Row(
-                            children: [
-                              CircleAvatar(
-                                backgroundColor: BaseColors.primary,
-                                radius: 7,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                "${c.name} (\$${value.toStringAsFixed(0)})",
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      );
-    });
-  }
-
-
-  Widget _buildTopExpense() {
-    final list = controller.topExpenses;
+  Widget _buildTopTransactions() {
+    final list = controller.topTransactions;
 
     if (list.isEmpty) {
       return const Padding(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: Text("No expenses for this period."),
+        child: Text("No transactions for this period."),
       );
     }
 
@@ -294,7 +315,18 @@ class ReportTabScreen extends StatelessWidget {
       separatorBuilder: (_, __) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final tx = list[index];
-        final cat = controller.categoryOf(tx.categoryId);
+
+        final isIncome = tx.type.toLowerCase().trim() == 'income';
+        final sign = isIncome ? "+" : "-";
+        final color = isIncome ? BaseColors.income : Colors.red.shade400;
+
+        final title = (tx.itemName?.trim().isNotEmpty == true)
+            ? tx.itemName!.trim()
+            : (tx.note?.trim().isNotEmpty == true)
+                ? tx.note!.trim()
+                : "Transaction";
+
+        final catName = tx.categoryName ?? controller.categoryName(tx.categoryId);
 
         return ListTile(
           onTap: () => debugPrint("Tapped ${tx.id}"),
@@ -303,16 +335,16 @@ class ReportTabScreen extends StatelessWidget {
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
           title: Text(
-            tx.title,
+            title,
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
-          subtitle: Text(cat.name),
+          subtitle: Text(catName),
           trailing: Text(
-            "-\$${tx.amount.toStringAsFixed(2)}",
+            "$sign${tx.currencyCode.toUpperCase()} ${tx.amount.toStringAsFixed(2)}",
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 18,
-              color: Colors.red.shade400,
+              color: color,
             ),
           ),
         );
@@ -320,4 +352,3 @@ class ReportTabScreen extends StatelessWidget {
     );
   }
 }
-
