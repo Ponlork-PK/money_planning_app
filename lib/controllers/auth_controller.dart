@@ -1,13 +1,8 @@
-import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:money_planning_app/services/api_service.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
+import 'package:money_planning_app/utils/prefs.dart';
 
 class AuthController extends GetxController {
-  final ApiService _api = ApiService();
-
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
@@ -15,70 +10,21 @@ class AuthController extends GetxController {
   final isLoading = false.obs;
   final errorMessage = ''.obs;
 
-  // Auth state
-  final Rxn<Session> session = Rxn<Session>();
-  final Rxn<User> user = Rxn<User>();
-
-  StreamSubscription<AuthState>? _sub;
-
-  bool get isLoggedIn => session.value != null;
+  // Auth state (local only — no Supabase)
+  final isLoggedIn = false.obs;
 
   @override
   void onInit() {
     super.onInit();
-
-    // Load initial session
-    session.value = _api.session;
-    user.value = _api.user;
-
-    // Listen for auth changes
-    _sub = _api.client.auth.onAuthStateChange.listen((data) {
-      session.value = data.session;
-      user.value = data.session?.user;
-    });
+    _loadLocalSession();
   }
 
-  @override
-  void onClose() {
-    _sub?.cancel();
-    super.onClose();
+  Future<void> _loadLocalSession() async {
+    isLoggedIn.value = await Prefs.isLoggedIn();
   }
 
-  Future<void> signUp({
-    required String email,
-    required String password,
-  }) async {
-    try {
-      isLoading.value = true;
-      errorMessage.value = '';
-
-      final res = await _api.signUp(email: email, password: password);
-
-      // Note: depending on your Supabase email confirmation setting,
-      // session may be null until user confirms email.
-      session.value = res.session ?? _api.session;
-      user.value = res.user ?? _api.user;
-
-      if (session.value == null) {
-        // Often happens if email confirmation is ON
-        Get.snackbar(
-          'Check your email',
-          'Confirm your email address to complete sign up.',
-        );
-      } else {
-        Get.snackbar('Success', 'Account created!');
-      }
-    } on AuthException catch (e) {
-      errorMessage.value = e.message;
-      Get.snackbar('Auth Error', e.message, snackPosition: SnackPosition.BOTTOM);
-    } catch (e) {
-      errorMessage.value = e.toString();
-      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
+  /// Sign in using local credentials stored in SharedPreferences.
+  /// No Supabase auth backend is called.
   Future<bool> signIn({
     required String email,
     required String password,
@@ -87,17 +33,18 @@ class AuthController extends GetxController {
       isLoading.value = true;
       errorMessage.value = '';
 
-      final res = await _api.signIn(email: email, password: password);
+      // Basic validation
+      if (email.isEmpty || password.isEmpty) {
+        errorMessage.value = 'Email and password are required.';
+        return false;
+      }
 
-      session.value = res.session;
-      user.value = res.user;
+      // Save session locally
+      await Prefs.saveLogin(userId: email, email: email);
+      isLoggedIn.value = true;
 
       Get.snackbar('Welcome', 'Signed in successfully!', snackPosition: SnackPosition.BOTTOM);
       return true;
-    } on AuthException catch (e) {
-      errorMessage.value = e.message;
-      Get.snackbar('Auth Error', e.message, snackPosition: SnackPosition.BOTTOM);
-      return false;
     } catch (e) {
       errorMessage.value = e.toString();
       Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
@@ -107,14 +54,14 @@ class AuthController extends GetxController {
     }
   }
 
+  /// Sign out — clears local session only.
   Future<void> signOut() async {
     try {
       isLoading.value = true;
       errorMessage.value = '';
 
-      await _api.signOut();
-      session.value = null;
-      user.value = null;
+      await Prefs.logOut();
+      isLoggedIn.value = false;
 
       Get.snackbar('Signed out', 'See you again!', snackPosition: SnackPosition.BOTTOM);
     } catch (e) {

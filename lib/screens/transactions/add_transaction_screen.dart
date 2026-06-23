@@ -233,6 +233,7 @@ class AddTransactionScreen extends StatelessWidget {
                         TextFormField(
                           controller: controller.purposeCtrl,
                           maxLines: 5,
+                          style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: BaseColors.textPrimary),
                           decoration: InputDecoration(
                               filled: true,
                               fillColor: Colors.grey.shade100,

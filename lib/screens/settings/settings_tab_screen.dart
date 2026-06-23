@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/controllers/settings_controller/settings_controller.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
-import 'package:money_planning_app/utils/base_constants.dart';
 
 class SettingsTabScreen extends StatelessWidget {
   SettingsTabScreen({super.key});
@@ -19,7 +18,7 @@ class SettingsTabScreen extends StatelessWidget {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      title: const Text(BaseConstants.settingsTitle),
+      title: Text("setting".tr),
     );
   }
 
@@ -52,17 +51,61 @@ class SettingsTabScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(BaseConstants.notification),
+                    Text("notification".tr),
                     Obx(() => Switch(
                       value: controller.isNotificationEnabled.value,
                       onChanged: controller.toggleNotification,
-                      activeColor: BaseColors.activeColor,
+                      activeThumbColor: BaseColors.activeColor,
                     )),
                   ],
                 ),
               ),
             ),
-            Spacer(),
+            const SizedBox(height: 20),
+
+            // Logout button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: Obx(() => ElevatedButton.icon(
+                  onPressed: controller.isLoggingOut.value
+                      ? null
+                      : () => _showLogoutDialog(context),
+                  icon: controller.isLoggingOut.value
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.logout, color: Colors.white),
+                  label: Text(
+                    controller.isLoggingOut.value
+                        ? 'loggingOut'.tr
+                        : 'logout'.tr,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: BaseColors.expense,
+                    disabledBackgroundColor: BaseColors.expense.withOpacity(0.6),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 2,
+                  ),
+                )),
+              ),
+            ),
+
+            const Spacer(),
           ],
         ),
       ),
@@ -80,7 +123,7 @@ class SettingsTabScreen extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const Text(BaseConstants.selectCurrency),
+            Text("defaultCurrency".tr),
             const Spacer(),
 
             // ✅ Selected currency display (auto update)
@@ -138,83 +181,95 @@ class SettingsTabScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              BaseConstants.preference,
+              "preference".tr,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 14),
 
-            // Dark Mode row
+            // Dark Mode
             Row(
               children: [
-                Text(BaseConstants.darkMode),
+                Text("darkMode".tr),
                 const Spacer(),
                 Obx(() => Switch(
-                      value: controller.isDarkMode.value,
-                      onChanged: controller.toggleDarkMode,
-                      activeColor: BaseColors.activeColor,
-                    )),
+                  value: controller.isDarkMode.value,
+                  onChanged: controller.toggleDarkMode,
+                  activeThumbColor: BaseColors.activeColor,
+                )),
               ],
             ),
 
             const SizedBox(height: 10),
 
-            // Language row
+            // ✅ Fixed Language Dropdown
             Row(
               children: [
-                Text(BaseConstants.language),
-                const Spacer(),
-                Obx(() => Row(
-                      children: [
-                        _langOption(
-                          label: "EN",
-                          selected: controller.language.value == "EN",
-                          onTap: () => controller.setLanguage("EN"),
-                        ),
-                        const SizedBox(width: 18),
-                        _langOption(
-                          label: "KH",
-                          selected: controller.language.value == "KH",
-                          onTap: () => controller.setLanguage("KH"),
-                        ),
+                Expanded(
+                  flex: 3,
+                  child: Text(
+                    "language".tr,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Obx(() {
+                    final currentLang = controller.language.value;
+                    final validValue = ['en', 'km'].contains(currentLang) ? currentLang : 'en';
+                    
+                    return DropdownButton<String>(
+                      value: validValue,
+                      isExpanded: true,
+                      underline: SizedBox(),
+                      borderRadius: BorderRadius.circular(12),
+                      onChanged: (value) => controller.setLanguage(value!),
+                      items: const [
+                        DropdownMenuItem(value: 'en', child: Text('English')),
+                        DropdownMenuItem(value: 'km', child: Text('ខ្មែរ')),
                       ],
-                    )),
+                    );
+                  }),
+                ),
               ],
-            ),
+            )
           ],
         ),
       ),
     );
   }
 
-  Widget _langOption({required String label, required bool selected, required VoidCallback onTap}){
-    return GestureDetector(
-      onTap: onTap,
-      child: Row(
-        children: [
-          Container(
-            width: 22,
-            height: 22,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.black54, width: 1.5),
+  void _showLogoutDialog(BuildContext context) {
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('logout'.tr),
+        content: Text('logoutConfirm'.tr),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(
+              'cancel'.tr,
+              style: const TextStyle(color: BaseColors.textSecondary),
             ),
-            child: selected
-                ? Center(
-                    child: Container(
-                      width: 10,
-                      height: 10,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.black,
-                      ),
-                    ),
-                  )
-                : null,
           ),
-          const SizedBox(width: 8),
-          Text(label),
+          ElevatedButton(
+            onPressed: () {
+              Get.back(); // close dialog
+              controller.logout();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: BaseColors.expense,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'logout'.tr,
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
         ],
       ),
     );

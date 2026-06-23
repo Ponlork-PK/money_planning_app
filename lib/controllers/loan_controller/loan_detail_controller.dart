@@ -130,10 +130,6 @@ class LoanDetailsController extends GetxController {
     }
   }
 
-  void onEditLoan() {
-    // Get.toNamed(RoutesName.editLoan, arguments: {"loanId": loanId});
-  }
-
   // helpers for formatting
   String formatAmount(double v, String currency) {
     final cur = currency.toUpperCase().trim();

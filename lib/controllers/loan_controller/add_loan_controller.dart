@@ -34,12 +34,7 @@ class AddLoanController extends GetxController {
     super.onInit();
 
     // if edit, expect argument Loan
-    final arg = Get.arguments;
-    if (arg is Loan) {
-      _bindEdit(arg);
-    } else if (arg is Map && arg['loan'] is Loan) {
-      _bindEdit(arg['loan'] as Loan);
-    }
+    _handleArguments();
   }
 
   @override
@@ -52,25 +47,34 @@ class AddLoanController extends GetxController {
     super.onClose();
   }
 
-  void _bindEdit(Loan loan) {
-    isEdit.value = true;
-    editingLoanId = loan.id;
-
-    lenderNameCtrl.text = loan.name;
-    amountCtrl.text = loan.originalAmount.toString();
-    interestCtrl.text = loan.interestRate.toString(); // percent (ex: 1.5)
-    termCtrl.text = loan.termMonths?.toString() ?? '';
-    currency.value = loan.currencyCode.toUpperCase();
-
-    // map label -> raw
-    final t = loan.lenderType.toLowerCase().trim();
-    if (t == 'bank') {selectedLoanType.value = 'bank';}
-    else if (t == 'micro') {selectedLoanType.value = 'micro';}
-    else {selectedLoanType.value = 'family';} // Personal/Family -> family
-
-    startDate.value = loan.startDate;
-    endDate.value = loan.endDate;
+  void _handleArguments() {
+    final arg = Get.arguments;
+    if (arg is Loan) {
+      _bindEdit(arg); // ✅ Works
+    } else if (arg is Map<String, dynamic> && arg['loan'] is Loan) {
+      _bindEdit(arg['loan'] as Loan);
+    }
+    // ✅ Ignores invalid args (no crash)
   }
+
+  void _bindEdit(Loan loan) {
+  isEdit.value = true;
+  editingLoanId = loan.id;
+
+  lenderNameCtrl.text = loan.name;
+  amountCtrl.text = loan.originalAmount.toString();
+  interestCtrl.text = (loan.interestRate).toString();
+  termCtrl.text = loan.termMonths?.toString() ?? '';
+  purposeCtrl.text = loan.purpose ?? ""; // ✅ Add purpose to Loan model
+
+  currency.value = (loan.currencyCode).toUpperCase();
+
+  final t = (loan.lenderType).toLowerCase().trim();
+  selectedLoanType.value = t == 'bank' ? 'bank' : t == 'micro' ? 'micro' : 'family';
+
+  startDate.value = loan.startDate;
+  endDate.value = loan.endDate;
+}
 
   void setCurrency(String value) => currency.value = value;
 
@@ -157,46 +161,63 @@ class AddLoanController extends GetxController {
       final rate = _toDouble(interestCtrl.text) ?? 0.0;
       final term = _toInt(termCtrl.text);
 
-      // Create model (for insert)
       final draft = Loan(
         id: editingLoanId,
         userId: null,
         name: lenderNameCtrl.text.trim(),
-        lenderType: selectedLoanType.value, // raw: bank|micro|family
+        lenderType: selectedLoanType.value,
         originalAmount: amount,
-        currentBalance: amount,
+        currentBalance: isEdit.value ? null : amount,
         interestRate: rate,
         termMonths: term,
         startDate: startDate.value!,
         endDate: endDate.value,
         currencyCode: currency.value,
-        paidPercent: 0,
+        purpose: purposeCtrl.text.trim(),
+        paidPercent: isEdit.value ? null : 0,
         nextRepaymentDate: null,
         schedules: const [],
         histories: const [],
       );
 
-      if (isEdit.value) {
-        // ✅ update loan
+      if (isEdit.value && editingLoanId != null) {
+        // ✅ UPDATE loan
         await _api.updateLoan(loanId: editingLoanId!, loan: draft);
-      } else {
-        // ✅ create loan
-        final created = await _api.createLoan(draft);
-
-        // ✅ optional: auto-generate schedule if termMonths exists
+        
+        // ✅ REGENERATE payments if term exists (NEW: always regenerate on update)
         if (term != null && term > 0) {
-          final payments = _generateEqualMonthlyPayments(
+          final newPayments = _generateEqualMonthlyPayments(
+            loanId: editingLoanId!,
+            currency: currency.value,
+            total: amount,
+            start: startDate.value!,
+            months: term,
+          );
+          await _api.deleteAllPayments(loanId: editingLoanId!); // NEW: clear old
+          await _api.createLoanPayments(loanId: editingLoanId!, payments: newPayments);
+        } else {
+          // No term = clear payments
+          await _api.deleteAllPayments(loanId: editingLoanId!);
+        }
+        
+        Get.back(result: true);
+        
+      } else {
+        // ✅ CREATE new loan (your existing code)
+        final created = await _api.createLoan(draft);
+        if (term != null && term > 0) {
+          final newPayments = _generateEqualMonthlyPayments(
             loanId: created.id!,
             currency: created.currencyCode,
             total: created.originalAmount,
             start: created.startDate,
             months: term,
           );
-          await _api.createLoanPayments(loanId: created.id!, payments: payments);
+          await _api.createLoanPayments(loanId: created.id!, payments: newPayments);
         }
+        Get.back(result: true);
       }
 
-      Get.back(result: true); // ✅ refresh previous screen
     } catch (e) {
       error.value = e.toString();
       Get.snackbar("Save failed", error.value!);

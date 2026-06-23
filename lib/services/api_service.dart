@@ -312,7 +312,7 @@ class ApiService {
   Future<List<Loan>> fetchLoans() async {
     final rowsRaw = await client
         .from('loans')
-        .select('id,user_id,lender_type,lender_name,original_amount,interest_rate,term_months,start_date,end_date,currency_code,status,created_at')
+        .select('id,user_id,lender_type,lender_name,original_amount,interest_rate,term_months,start_date,end_date,currency_code,status,created_at,purpose')
         .eq('user_id', uid)
         .order('created_at', ascending: false);
 
@@ -395,16 +395,31 @@ class ApiService {
           'original_amount': loan.originalAmount,
           'interest_rate': loan.interestRate,
           'term_months': loan.termMonths,
-          'start_date': DateTime(loan.startDate.year, loan.startDate.month, loan.startDate.day)
-              .toIso8601String(),
+          'start_date': DateTime(
+              loan.startDate.year, 
+              loan.startDate.month, 
+              loan.startDate.day
+            ).toIso8601String(),
           'end_date': loan.endDate == null
               ? null
-              : DateTime(loan.endDate!.year, loan.endDate!.month, loan.endDate!.day).toIso8601String(),
+              : DateTime(
+                    loan.endDate!.year, 
+                    loan.endDate!.month, 
+                    loan.endDate!.day
+                ).toIso8601String(),
           'currency_code': loan.currencyCode.toUpperCase(),
+          'purpose': loan.purpose
         })
         .eq('id', loanId)
         .eq('user_id', uid);
   }
 
+  // ✅ Supabase: Delete all payments for loan
+  Future<void> deleteAllPayments({required String loanId}) async {
+    await client
+        .from('loan_payments')  // Your payments table name
+        .delete()
+        .eq('loan_id', loanId);
+  }
 
 }

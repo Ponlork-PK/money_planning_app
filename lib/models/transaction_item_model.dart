@@ -244,20 +244,20 @@ class TransactionItemModel {
   // ✅ FETCH (select)
   // -----------------------------
   factory TransactionItemModel.fromMap(Map<String, dynamic> json) {
-    DateTime _parseDate(dynamic v) {
+    DateTime parseDate(dynamic v) {
       if (v == null) return DateTime.now();
       if (v is String) return DateTime.parse(v).toLocal();
       if (v is DateTime) return v.toLocal();
       return DateTime.now();
     }
 
-    double _parseDouble(dynamic v) {
+    double parseDouble(dynamic v) {
       if (v == null) return 0.0;
       if (v is num) return v.toDouble();
       return double.tryParse(v.toString()) ?? 0.0;
     }
 
-    int? _parseInt(dynamic v) {
+    int? parseInt(dynamic v) {
       if (v == null) return null;
       if (v is num) return v.toInt();
       return int.tryParse(v.toString());
@@ -286,13 +286,13 @@ class TransactionItemModel {
       id: json['id']?.toString(),
       userId: json['user_id']?.toString(),
       type: typeStr,
-      amount: _parseDouble(json['amount']),
+      amount: parseDouble(json['amount']),
       currencyCode: (json['currency_code'] ?? 'USD').toString(),
-      transactedAt: _parseDate(json['transacted_at']),
+      transactedAt: parseDate(json['transacted_at']),
       itemName: json['item_name']?.toString(),
       note: json['note']?.toString(),
-      categoryId: _parseInt(json['category_id']),
-      paymentMethodId: _parseInt(json['payment_method_id']),
+      categoryId: parseInt(json['category_id']),
+      paymentMethodId: parseInt(json['payment_method_id']),
       paymentMethodName: pmName,
       categoryName: catName,
       categoryIcon: catIcon,

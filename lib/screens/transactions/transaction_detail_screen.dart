@@ -26,7 +26,7 @@ class TransactionDetailScreen extends StatelessWidget {
 
           final result = await Get.toNamed(
             RoutesName.addTransaction,
-            arguments: tx,
+            arguments: tx
           );
           if (result == true) {
             controller.fetchTransaction();
@@ -48,31 +48,31 @@ class TransactionDetailScreen extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context) {
-    if (controller.isLoading.value) {
-      return Container(
-        color: BaseColors.primary,
-        child: const Center(child: CircularProgressIndicator()),
-      );
-    }
+    // if (controller.isLoading.value) {
+    //   return Container(
+    //     color: BaseColors.primary,
+    //     child: const Center(child: CircularProgressIndicator()),
+    //   );
+    // }
 
-    if (controller.error.value.isNotEmpty) {
-      return Container(
-        color: BaseColors.primary,
-        child: Center(
-          child: Text(
-            controller.error.value,
-            style: const TextStyle(color: Colors.white),
-          ),
-        ),
-      );
-    }
+    // if (controller.error.value.isNotEmpty) {
+    //   return Container(
+    //     color: BaseColors.primary,
+    //     child: Center(
+    //       child: Text(
+    //         controller.error.value,
+    //         style: const TextStyle(color: Colors.white),
+    //       ),
+    //     ),
+    //   );
+    // }
 
     final tx = controller.transaction.value;
     if (tx == null) {
       return Container(
         color: BaseColors.primary,
         child: const Center(
-          child: Text('Transaction not found', style: TextStyle(color: Colors.white)),
+          child: CircularProgressIndicator(),
         ),
       );
     }
@@ -112,7 +112,7 @@ class TransactionDetailScreen extends StatelessWidget {
           ),
           Text(
             amountText,
-            style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: Colors.white),
+            style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: BaseColors.darkTextPrimary),
           ),
           const SizedBox(height: 8),
           Container(
@@ -123,7 +123,7 @@ class TransactionDetailScreen extends StatelessWidget {
             ),
             child: Text(
               tx.type.toUpperCase(),
-              style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold, color: isExpense ? BaseColors.expense : BaseColors.income),
             ),
           ),
           const SizedBox(height: 12),

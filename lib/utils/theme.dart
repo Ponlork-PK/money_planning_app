@@ -57,7 +57,7 @@ class AppTheme {
       ),
 
       // ===== Cards =====
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: BaseColors.card,
         elevation: 0,
         margin: EdgeInsets.zero,
@@ -236,7 +236,7 @@ class AppTheme {
         showUnselectedLabels: true,
       ),
 
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: BaseColors.darkCard,
         elevation: 0,
         margin: EdgeInsets.zero,

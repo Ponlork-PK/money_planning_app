@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/controllers/transaction_controller.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
-import 'package:money_planning_app/utils/base_constants.dart';
 import 'package:money_planning_app/utils/routes_name.dart';
 import 'package:money_planning_app/widgets/item_list_widget.dart';
 
@@ -21,7 +20,7 @@ class TransactionTabScreen extends StatelessWidget {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) => AppBar(
         title: Text(
-          BaseConstants.transactionTitle,
+          "transaction".tr,
           style: Theme.of(context)
               .textTheme
               .bodyLarge!
@@ -36,13 +35,13 @@ class TransactionTabScreen extends StatelessWidget {
       );
 
   Widget _buildBody(BuildContext context) {
-    if (controller.isLoading.value) {
-      return Container(
-        width: double.infinity,
-        color: BaseColors.primary,
-        child: const Center(child: CircularProgressIndicator()),
-      );
-    }
+    // if (controller.isLoading.value) {
+    //   return Container(
+    //     width: double.infinity,
+    //     color: BaseColors.primary,
+    //     child: const Center(child: CircularProgressIndicator()),
+    //   );
+    // }
 
     if (controller.error.value.isNotEmpty) {
       return Container(
@@ -88,7 +87,7 @@ class TransactionTabScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      BaseConstants.balanceDashboard,
+                      "balance".tr,
                       style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: BaseColors.textPrimary,
                             fontWeight: FontWeight.bold,
@@ -110,7 +109,7 @@ class TransactionTabScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(left: 20.0, top: 14, bottom: 6),
               child: Text(
-                BaseConstants.tsHistory,
+                "tsHistory".tr,
                 style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
               ),
             ),
@@ -121,9 +120,9 @@ class TransactionTabScreen extends StatelessWidget {
                 onRefresh: controller.refreshTransactions,
                 child: controller.transactions.isEmpty
                     ? ListView(
-                        children: const [
-                          SizedBox(height: 120),
-                          Center(child: Text("No transactions")),
+                        children: [
+                          const SizedBox(height: 120),
+                          Center(child: Text("noTransaction".tr)),
                         ],
                       )
                     : ListView.builder(

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/controllers/search_transaction_controller.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
-import 'package:money_planning_app/utils/base_constants.dart';
 import 'package:money_planning_app/utils/routes_name.dart';
 import 'package:money_planning_app/widgets/item_list_widget.dart';
 
@@ -35,7 +34,7 @@ class SearchTransactionScreen extends StatelessWidget {
           contentPadding: const EdgeInsets.all(0),
           filled: true,
           fillColor: BaseColors.primary,
-          hintText: BaseConstants.searchHint,
+          hintText: "searchTs".tr,
           hintStyle: Theme.of(context)
               .textTheme
               .bodyMedium!
@@ -60,11 +59,11 @@ class SearchTransactionScreen extends StatelessWidget {
 
     // empty query state (results cleared)
     if (controller.searchCtrl.text.trim().isEmpty) {
-      return const Center(child: Text("Type to search transactions..."));
+      return Center(child: Text("typeToSearch".tr));
     }
 
     if (controller.results.isEmpty) {
-      return const Center(child: Text("No results"));
+      return Center(child: Text("noResult".tr));
     }
 
     return ListView.builder(

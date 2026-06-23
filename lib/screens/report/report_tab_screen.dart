@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/controllers/report_controller.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
-import 'package:money_planning_app/utils/base_constants.dart';
 
 class ReportTabScreen extends StatelessWidget {
   ReportTabScreen({super.key});
@@ -15,7 +14,7 @@ class ReportTabScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(BaseConstants.reportTitle),
+        title: Text("report".tr),
         actions: [
           Obx(() => IconButton(
             onPressed: controller.isExporting.value ? null : () => controller.exportPdf(),
@@ -32,81 +31,85 @@ class ReportTabScreen extends StatelessWidget {
   Widget _buildBody(BuildContext context) {
     return Container(
       width: double.infinity,
+      padding: const EdgeInsets.only(top: 30),
       color: BaseColors.primary,
-      child: Container(
-        padding: const EdgeInsets.only(top: 10),
-        margin: const EdgeInsets.only(top: 30),
-        decoration: BoxDecoration(
-          color: BaseColors.background,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(30),
-            topRight: Radius.circular(30),
+      child: RefreshIndicator(
+        onRefresh: () => controller.loadReport(),
+        child: Container(
+          padding: const EdgeInsets.only(top: 10),
+          decoration: BoxDecoration(
+            color: BaseColors.background,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(30),
+              topRight: Radius.circular(30),
+            ),
           ),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            spacing: 10,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Obx(
-                () => Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(left: 16, right: 16, top: 10),
-                  color: Colors.transparent,
-                  child: CupertinoSlidingSegmentedControl<int>(
-                    groupValue: controller.selectedIndex.value,
-                    thumbColor: BaseColors.primary,
-                    children: {
-                      0: _buildSegment(context, BaseConstants.dailyTxt, 0),
-                      1: _buildSegment(context, BaseConstants.weekly, 1),
-                      2: _buildSegment(context, BaseConstants.monthlyTxt, 2),
-                    },
-                    onValueChanged: (value) {
-                      if (value != null) controller.setIndex(value);
-                    },
+          child: SingleChildScrollView(
+            physics: AlwaysScrollableScrollPhysics(),
+            child: Column(
+              spacing: 10,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Obx(
+                  () => Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(left: 16, right: 16, top: 10),
+                    color: Colors.transparent,
+                    child: CupertinoSlidingSegmentedControl<int>(
+                      groupValue: controller.selectedIndex.value,
+                      thumbColor: BaseColors.primary,
+                      children: {
+                        0: _buildSegment(context, "daily".tr, 0),
+                        1: _buildSegment(context, "weekly".tr, 1),
+                        2: _buildSegment(context, "monthly".tr, 2),
+                      },
+                      onValueChanged: (value) {
+                        if (value != null) controller.setIndex(value);
+                      },
+                    ),
                   ),
                 ),
-              ),
-
-              // loading / error line
-              Obx(() {
-                if (controller.isLoading.value) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                    child: LinearProgressIndicator(minHeight: 2),
-                  );
-                }
-                final err = controller.error.value;
-                if (err != null) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                    child: Text(
-                      err,
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  );
-                }
-                return const SizedBox.shrink();
-              }),
-
-              Obx(() => _buildIncomeExpenseChart(context)),
-
-              // _buildPieChart(context),
-
-              Padding(
-                padding: const EdgeInsets.only(left: 16.0, top: 6),
-                child: Text(
-                  "Top Transactions",
-                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: BaseColors.textPrimary,
+            
+                // loading / error line
+                Obx(() {
+                  if (controller.isLoading.value) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                      child: LinearProgressIndicator(minHeight: 2),
+                    );
+                  }
+                  final err = controller.error.value;
+                  if (err != null) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                      child: Text(
+                        err,
+                        style: const TextStyle(color: Colors.red),
                       ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                }),
+            
+                Obx(() => _buildIncomeExpenseChart(context)),
+            
+                // _buildPieChart(context),
+            
+                Padding(
+                  padding: const EdgeInsets.only(left: 16.0, top: 6),
+                  child: Text(
+                    "topTs".tr,
+                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: BaseColors.textPrimary,
+                        ),
+                  ),
                 ),
-              ),
-
-              Obx(() => _buildTopTransactions()),
-              const SizedBox(height: 16),
-            ],
+            
+                Obx(() => _buildTopTransactions()),
+                const SizedBox(height: 16),
+              ],
+            ),
           ),
         ),
       ),
@@ -149,7 +152,7 @@ class ReportTabScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              "Income vs. Expense",
+              "in_and_exp".tr,
               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                     fontWeight: FontWeight.bold,
                     color: BaseColors.textPrimary,
@@ -162,12 +165,14 @@ class ReportTabScreen extends StatelessWidget {
               children: [
                 _barWithLabel(
                   color: BaseColors.income,
-                  label: "Income\n\$${income.toStringAsFixed(2)}",
+                  label: "income".tr,
+                  amount: "\$${income.toStringAsFixed(2)}",
                   height: incomeH,
                 ),
                 _barWithLabel(
                   color: BaseColors.expense,
-                  label: "Expense\n\$${expense.toStringAsFixed(2)}",
+                  label: "expense".tr,
+                  amount: "\$${expense.toStringAsFixed(2)}",
                   height: expenseH,
                 ),
               ],
@@ -182,8 +187,10 @@ class ReportTabScreen extends StatelessWidget {
     required double height,
     required Color color,
     required String label,
+    required String amount
   }) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         AnimatedContainer(
           duration: const Duration(milliseconds: 800),
@@ -201,6 +208,7 @@ class ReportTabScreen extends StatelessWidget {
         Container(width: 70, height: 2, color: Colors.grey),
         const SizedBox(height: 8),
         Text(label, textAlign: TextAlign.center),
+        Text(amount)
       ],
     );
   }
@@ -302,10 +310,7 @@ class ReportTabScreen extends StatelessWidget {
     final list = controller.topTransactions;
 
     if (list.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: Text("No transactions for this period."),
-      );
+      return Center(child: Text("noTransaction".tr));
     }
 
     return ListView.separated(

@@ -113,13 +113,13 @@ class LoginScreen extends StatelessWidget {
                               onPressed: loading
                                   ? null
                                   : () async {
+                                      if (!formKey.currentState!.validate()) return;
                                       final email = controller.emailController.text.trim();
                                       final password = controller.passwordController.text;
                                       final success = await controller.signIn(email: email, password: password);
                                       if (success) {
                                         Get.offAllNamed(RoutesName.home);
                                       } else {
-                                        // optional toast/snackbar
                                         final msg = controller.errorMessage.value.isEmpty
                                             ? "Login failed"
                                             : controller.errorMessage.value;
