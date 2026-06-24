@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/controllers/add_transactions_controller.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
-import 'package:money_planning_app/utils/base_constants.dart';
 
 class AddTransactionScreen extends StatelessWidget {
   AddTransactionScreen({super.key});
@@ -24,7 +23,7 @@ class AddTransactionScreen extends StatelessWidget {
   PreferredSizeWidget _buildAppBar() =>
       AppBar(
         leading: IconButton(onPressed: () => Get.back(result: true), icon: const Icon(Icons.arrow_back)),
-        title: Obx(() => Text(controller.isEdit.value ? BaseConstants.updateTransaction : BaseConstants.addTransactionTitle)));
+        title: Obx(() => Text(controller.isEdit.value ? 'updateTransaction'.tr : 'addTransactionTitle'.tr)));
 
   Widget _buildBody(BuildContext context) => Container(
         width: double.infinity,
@@ -51,7 +50,7 @@ class AddTransactionScreen extends StatelessWidget {
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Text(BaseConstants.amountAddTran,
+                      child: Text('amountLabel'.tr,
                           style: Theme.of(context)
                               .textTheme
                               .bodyMedium
@@ -72,7 +71,7 @@ class AddTransactionScreen extends StatelessWidget {
                                   .bodyMedium!
                                   .copyWith(color: BaseColors.textPrimary),
                               decoration: InputDecoration(
-                                hintText: BaseConstants.amountHint,
+                                hintText: 'amountHint'.tr,
                                 contentPadding: EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 8),
                                 border: const OutlineInputBorder(
@@ -97,7 +96,7 @@ class AddTransactionScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Transaction Type",
+                          'transactionType'.tr,
                           style: Theme.of(context)
                               .textTheme
                               .bodyMedium!
@@ -147,12 +146,12 @@ class AddTransactionScreen extends StatelessWidget {
                                       .transparent, // ✅ remove sliding thumb
                                   children: {
                                     0: seg(
-                                      text: "Income",
+                                      text: 'incomeLabel'.tr,
                                       color: Colors.green,
                                       selected: sel == 0,
                                     ),
                                     1: seg(
-                                      text: "Expense",
+                                      text: 'expenseLabel'.tr,
                                       color: Colors.red,
                                       selected: sel == 1,
                                     ),
@@ -186,7 +185,7 @@ class AddTransactionScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Input Date",
+                          'inputDate'.tr,
                           style: Theme.of(
                             context,
                           )
@@ -225,7 +224,7 @@ class AddTransactionScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Purpose",
+                        Text('purposeLabel'.tr,
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyMedium!
@@ -237,7 +236,7 @@ class AddTransactionScreen extends StatelessWidget {
                           decoration: InputDecoration(
                               filled: true,
                               fillColor: Colors.grey.shade100,
-                              hintText: "Purpose",
+                              hintText: 'purposeLabel'.tr,
                               border: OutlineInputBorder(
                                   borderSide: BorderSide.none,
                                   borderRadius: BorderRadius.circular(16))),
@@ -260,7 +259,7 @@ class AddTransactionScreen extends StatelessWidget {
                             },
                             child: controller.isSaving.value
                                 ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                                : Text(controller.isEdit.value ? "Update" : "Save"),
+                                : Text(controller.isEdit.value ? 'updateBtn'.tr : 'saveBtn'.tr),
                           ),
                         ),
                       ],
@@ -330,7 +329,7 @@ class AddTransactionScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Item Name",
+            'itemNameLabel'.tr,
             style: Theme.of(context)
                 .textTheme
                 .bodyMedium!
@@ -341,8 +340,8 @@ class AddTransactionScreen extends StatelessWidget {
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.grey.withAlpha(50),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              hintText: "Item name",
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              hintText: 'itemNameHint'.tr,
               border: OutlineInputBorder(
                 borderSide: BorderSide.none,
                 borderRadius: BorderRadius.circular(16),
@@ -351,7 +350,7 @@ class AddTransactionScreen extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            "Payment Method",
+            'paymentMethodLabel'.tr,
             style: Theme.of(context)
                 .textTheme
                 .bodyMedium!
@@ -362,8 +361,8 @@ class AddTransactionScreen extends StatelessWidget {
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.grey.withAlpha(50),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              hintText: "Cash / Card / Bank / ...",
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              hintText: 'paymentMethodHint'.tr,
               border: OutlineInputBorder(
                 borderSide: BorderSide.none,
                 borderRadius: BorderRadius.circular(16),

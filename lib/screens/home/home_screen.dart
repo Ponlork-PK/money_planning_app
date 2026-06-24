@@ -38,26 +38,26 @@ class HomeScreen extends StatelessWidget {
           selectedItemColor: BaseColors.primary,
           unselectedItemColor: BaseColors.textSecondary,
           showUnselectedLabels: true,
-          items: const [
+          items: [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              label: 'Home',
+              icon: const Icon(Icons.home_outlined),
+              label: 'navHome'.tr,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.swap_horiz_outlined),
-              label: 'Transaction',
+              icon: const Icon(Icons.swap_horiz_outlined),
+              label: 'navTransaction'.tr,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.pie_chart_outline),
-              label: 'Report',
+              icon: const Icon(Icons.pie_chart_outline),
+              label: 'navReport'.tr,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.account_balance_wallet_outlined),
-              label: 'Loan',
+              icon: const Icon(Icons.account_balance_wallet_outlined),
+              label: 'navLoan'.tr,
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.settings_outlined),
-              label: 'Settings',
+              icon: const Icon(Icons.settings_outlined),
+              label: 'navSettings'.tr,
             ),
           ],
         ),

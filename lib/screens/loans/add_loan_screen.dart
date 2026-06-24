@@ -21,7 +21,7 @@ class AddLoanScreen extends StatelessWidget {
               onPressed: () => Get.back(result: true),
               icon: const Icon(Icons.arrow_back),
             ),
-            title: Obx(() => Text(controller.isEdit.value ? "Edit Loan" : "Add New Loan")),
+            title: Obx(() => Text(controller.isEdit.value ? 'editLoanTitle'.tr : 'addLoanTitle'.tr)),
           ),
           body: Column(
             children: [
@@ -60,7 +60,7 @@ class AddLoanScreen extends StatelessWidget {
                                       height: 18,
                                       child: CircularProgressIndicator(strokeWidth: 2),
                                     )
-                                  : const Text("Save"),
+                                  : Text('saveLoanBtn'.tr),
                             )),
                       ),
                     ],
@@ -84,18 +84,18 @@ class AddLoanScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Purpose of Loan',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Text(
+              'purposeOfLoanLabel'.tr,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             TextFormField(
               style: TextStyle(color: BaseColors.textPrimary, fontSize: 20),
               controller: controller.purposeCtrl,
               maxLines: 5,
-              decoration: const InputDecoration(
-                labelText: 'Enter purpose of loan',
-                contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: InputDecoration(
+                labelText: 'enterPurposeHint'.tr,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               ),
             )
           ],
@@ -116,7 +116,7 @@ class AddLoanScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Loan Terms',
+            Text('loanTermsLabel'.tr,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
 
@@ -124,9 +124,9 @@ class AddLoanScreen extends StatelessWidget {
               style: TextStyle(color: BaseColors.textPrimary, fontSize: 20),
               controller: controller.amountCtrl,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Amounts',
-                contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              decoration: InputDecoration(
+                labelText: 'amountsHint'.tr,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               ),
             ),
 
@@ -136,16 +136,16 @@ class AddLoanScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: Obx(() => _dateBox(
-                        label: "Start",
-                        text: controller.startDate.value == null ? "Select" : fmt(controller.startDate.value!),
+                        label: 'startDateLabel'.tr,
+                        text: controller.startDate.value == null ? 'selectDateHint'.tr : fmt(controller.startDate.value!),
                         onTap: () => controller.pickStartDate(context),
                       )),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Obx(() => _dateBox(
-                        label: "End",
-                        text: controller.endDate.value == null ? "Select" : fmt(controller.endDate.value!),
+                        label: 'endDateLabel'.tr,
+                        text: controller.endDate.value == null ? 'selectDateHint'.tr : fmt(controller.endDate.value!),
                         onTap: () => controller.pickEndDate(context),
                       )),
                 ),
@@ -159,9 +159,9 @@ class AddLoanScreen extends StatelessWidget {
               ),
               controller: controller.interestCtrl,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Interest rate (%)',
-                contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10)
+              decoration: InputDecoration(
+                labelText: 'interestRateHint'.tr,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10)
               ),
             ),
 
@@ -171,9 +171,9 @@ class AddLoanScreen extends StatelessWidget {
               style: TextStyle(color: BaseColors.textPrimary, fontSize: 20),
               controller: controller.termCtrl,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Loan term (months)',
-                contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: InputDecoration(
+                labelText: 'loanTermHint'.tr,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               ),
             ),
 
@@ -182,7 +182,7 @@ class AddLoanScreen extends StatelessWidget {
             // Currency
             Row(
               children: [
-                Text('Currency', style: Theme.of(context).textTheme.bodyMedium),
+                Text('currencyLabel'.tr, style: Theme.of(context).textTheme.bodyMedium),
                 const Spacer(),
 
                 GestureDetector(
@@ -240,7 +240,7 @@ class AddLoanScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Loaner Name',
+              Text('loanerName'.tr,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
 
@@ -274,10 +274,10 @@ class AddLoanScreen extends StatelessWidget {
               TextFormField(
                 style: TextStyle(color: BaseColors.textPrimary, fontSize: 20),
                 controller: controller.lenderNameCtrl,
-                decoration: const InputDecoration(
-                  labelText: "Lender Name",
-                  contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                ),
+                  decoration: InputDecoration(
+                    labelText: 'lenderNameHint'.tr,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  ),
               ),
             ],
           ),
