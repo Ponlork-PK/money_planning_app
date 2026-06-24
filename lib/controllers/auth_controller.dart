@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:money_planning_app/services/api_service.dart';
 import 'package:money_planning_app/utils/prefs.dart';
 
 class AuthController extends GetxController {
@@ -10,7 +11,7 @@ class AuthController extends GetxController {
   final isLoading = false.obs;
   final errorMessage = ''.obs;
 
-  // Auth state (local only — no Supabase)
+  // Auth state
   final isLoggedIn = false.obs;
 
   @override
@@ -23,8 +24,7 @@ class AuthController extends GetxController {
     isLoggedIn.value = await Prefs.isLoggedIn();
   }
 
-  /// Sign in using local credentials stored in SharedPreferences.
-  /// No Supabase auth backend is called.
+  /// Sign in via Supabase — validates credentials against real users.
   Future<bool> signIn({
     required String email,
     required String password,
@@ -33,42 +33,74 @@ class AuthController extends GetxController {
       isLoading.value = true;
       errorMessage.value = '';
 
-      // Basic validation
+      // Basic client-side validation
       if (email.isEmpty || password.isEmpty) {
         errorMessage.value = 'Email and password are required.';
         return false;
       }
 
-      // Save session locally
-      await Prefs.saveLogin(userId: email, email: email);
+      // ✅ Authenticate with Supabase
+      final response = await ApiService().signIn(
+        email: email,
+        password: password,
+      );
+
+      if (response.user == null) {
+        errorMessage.value = 'Login failed. Please check your credentials.';
+        return false;
+      }
+
+      // ✅ Save session locally
+      await Prefs.saveLogin(
+        userId: response.user!.id,
+        email: response.user!.email ?? email,
+      );
       isLoggedIn.value = true;
 
-      Get.snackbar('Welcome', 'Signed in successfully!', snackPosition: SnackPosition.BOTTOM);
       return true;
-    } catch (e) {
-      errorMessage.value = e.toString();
-      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+    } on Exception catch (e) {
+      // Parse Supabase error messages into user-friendly text
+      final raw = e.toString();
+      if (raw.contains('Invalid login credentials') ||
+          raw.contains('invalid_credentials')) {
+        errorMessage.value = 'Incorrect email or password.';
+      } else if (raw.contains('Email not confirmed')) {
+        errorMessage.value = 'Please confirm your email before logging in.';
+      } else if (raw.contains('too many requests') ||
+          raw.contains('rate limit')) {
+        errorMessage.value = 'Too many attempts. Please try again later.';
+      } else {
+        errorMessage.value = 'Login failed. Please try again.';
+      }
       return false;
     } finally {
       isLoading.value = false;
     }
   }
 
-  /// Sign out — clears local session only.
+  /// Sign out — clears Supabase session and local storage.
   Future<void> signOut() async {
     try {
       isLoading.value = true;
       errorMessage.value = '';
 
+      // ✅ Sign out from Supabase
+      await ApiService().signOut();
+
+      // ✅ Clear local session
       await Prefs.logOut();
       isLoggedIn.value = false;
-
-      Get.snackbar('Signed out', 'See you again!', snackPosition: SnackPosition.BOTTOM);
     } catch (e) {
       errorMessage.value = e.toString();
-      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
     } finally {
       isLoading.value = false;
     }
+  }
+
+  @override
+  void onClose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.onClose();
   }
 }

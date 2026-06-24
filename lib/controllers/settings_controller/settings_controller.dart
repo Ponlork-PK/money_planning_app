@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:money_planning_app/services/api_service.dart';
 import 'package:money_planning_app/utils/prefs.dart';
 import 'package:money_planning_app/utils/routes_name.dart';
 
@@ -38,6 +39,9 @@ class SettingsController extends GetxController {
   Future<void> logout() async {
     try {
       isLoggingOut.value = true;
+
+      // ✅ Sign out from Supabase first
+      await ApiService().signOut();
 
       await Prefs.logOut();
 
