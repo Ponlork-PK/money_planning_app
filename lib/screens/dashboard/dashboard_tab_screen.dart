@@ -191,9 +191,9 @@ class DashboardTabScreen extends StatelessWidget {
                 child: RefreshIndicator(
                   onRefresh: () => controller.refreshDashboard(),
                   child: Container(
-                    margin: EdgeInsets.symmetric(horizontal: 16),
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
                     child: SingleChildScrollView(
-                      physics: AlwaysScrollableScrollPhysics(),
+                      physics: const AlwaysScrollableScrollPhysics(),
                       child: Obx(() {
                         if (controller.recent.isEmpty) {
                           return Center(
@@ -204,6 +204,7 @@ class DashboardTabScreen extends StatelessWidget {
                                       .copyWith(color: BaseColors.itemIconBg)));
                         }
                         return Column(
+                          spacing: 10,
                           children: controller.recent.map((tx) {
                             final sign = tx.type == 'expense' ? '-' : '+';
                             final price =

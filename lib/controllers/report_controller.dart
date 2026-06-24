@@ -5,7 +5,9 @@ import 'package:get/get.dart';
 import 'package:money_planning_app/models/category_model.dart';
 import 'package:money_planning_app/models/transaction_item_model.dart';
 import 'package:money_planning_app/services/api_service.dart';
+import 'package:money_planning_app/services/realtime_service.dart';
 import 'package:money_planning_app/services/report_pdf_service.dart';
+import 'package:money_planning_app/utils/currency_converter.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
 
@@ -14,6 +16,7 @@ enum ReportPeriod { daily, weekly, monthly }
 class ReportController extends GetxController {
   final ApiService _api = ApiService();
   final ReportPdfService _pdfService = ReportPdfService();
+  final RealtimeService _realtime = RealtimeService();
   final isExporting = false.obs;
 
   final selectedIndex = 0.obs; // 0 daily, 1 weekly, 2 monthly
@@ -59,21 +62,16 @@ class ReportController extends GetxController {
   bool _isExpense(TransactionItemModel t) =>
       t.type.toLowerCase().trim() == 'expense';
 
-  String get _primaryCurrency => 'USD';  // Or fetch from user prefs/settings
-
-  bool _sameCurrency(TransactionItemModel t) =>
-      (t.currencyCode).toUpperCase() == _primaryCurrency.toUpperCase();
-
   // -------------------------
-  // Totals
+  // Totals — cross-currency (convert KHR → USD)
   // -------------------------
   double get incomeTotal => transactions
-      .where((t) => _isIncome(t) && _sameCurrency(t))
-      .fold<double>(0.0, (sum, t) => sum + t.amount);
+      .where((t) => _isIncome(t))
+      .fold<double>(0.0, (sum, t) => sum + CurrencyConverter.toUsd(t.amount, t.currencyCode));
 
   double get expenseTotal => transactions
-      .where((t) => _isExpense(t) && _sameCurrency(t))
-      .fold<double>(0.0, (sum, t) => sum + t.amount);
+      .where((t) => _isExpense(t))
+      .fold<double>(0.0, (sum, t) => sum + CurrencyConverter.toUsd(t.amount, t.currencyCode));
 
   // -------------------------
   // Expense by category
@@ -229,9 +227,23 @@ class ReportController extends GetxController {
   void onInit() {
     super.onInit();
 
+    // Realtime: auto-refresh when transactions change
+    _realtime.addTransactionListener(_onTransactionChange);
+
     // reload when period changes
     ever<int>(selectedIndex, (_) => loadReport());
 
+    loadReport();
+  }
+
+  @override
+  void onClose() {
+    _realtime.removeTransactionListener(_onTransactionChange);
+    super.onClose();
+  }
+
+  void _onTransactionChange() {
+    debugPrint('[ReportController] realtime event → refreshing');
     loadReport();
   }
 

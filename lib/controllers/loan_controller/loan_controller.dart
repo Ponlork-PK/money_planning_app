@@ -3,9 +3,11 @@ import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/models/loans_model.dart';
 import 'package:money_planning_app/services/api_service.dart';
+import 'package:money_planning_app/services/realtime_service.dart';
 
 class LoanController extends GetxController {
   final ApiService _api = ApiService();
+  final RealtimeService _realtime = RealtimeService();
 
   late ScrollController scrollController;
 
@@ -23,6 +25,10 @@ class LoanController extends GetxController {
     scrollController = ScrollController();
     scrollController.addListener(_onScroll);
 
+    // Realtime: auto-refresh when loans or loan payments change
+    _realtime.addLoanListener(_onLoanChange);
+    _realtime.addLoanPaymentListener(_onLoanChange);
+
     ever<int>(selectedIndex, (_) {
       // UI filter only; no API call needed
     });
@@ -32,9 +38,16 @@ class LoanController extends GetxController {
 
   @override
   void onClose() {
+    _realtime.removeLoanListener(_onLoanChange);
+    _realtime.removeLoanPaymentListener(_onLoanChange);
     scrollController.removeListener(_onScroll);
     scrollController.dispose();
     super.onClose();
+  }
+
+  void _onLoanChange() {
+    debugPrint('[LoanController] realtime event → refreshing');
+    loadLoans();
   }
 
   void setIndex(int idx) => selectedIndex.value = idx;

@@ -1,16 +1,20 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/models/transaction_item_model.dart';
 import 'package:money_planning_app/services/api_service.dart';
+import 'package:money_planning_app/services/realtime_service.dart';
+import 'package:money_planning_app/utils/currency_converter.dart';
 
 class TransactionTabController extends GetxController {
   final _api = ApiService();
+  final _realtime = RealtimeService();
 
   final isLoading = false.obs;
   final error = ''.obs;
 
   final transactions = <TransactionItemModel>[].obs;
 
-  // summary by selected currency
+  // Summary — always in USD (cross-currency)
   final currency = 'USD'.obs;
   final income = 0.0.obs;
   final expense = 0.0.obs;
@@ -19,6 +23,18 @@ class TransactionTabController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _realtime.addTransactionListener(_onTransactionChange);
+    refreshTransactions();
+  }
+
+  @override
+  void onClose() {
+    _realtime.removeTransactionListener(_onTransactionChange);
+    super.onClose();
+  }
+
+  void _onTransactionChange() {
+    debugPrint('[TransactionTabController] realtime event → refreshing');
     refreshTransactions();
   }
 
@@ -38,24 +54,19 @@ class TransactionTabController extends GetxController {
     }
   }
 
-  void setCurrency(String c) {
-    currency.value = c;
-    _calcSummary();
-  }
-
+  /// Calculate summary by converting ALL transactions to USD.
   void _calcSummary() {
-    final cur = currency.value;
-
     double inc = 0;
     double exp = 0;
 
     for (final tx in transactions) {
-      if (tx.currencyCode != cur) continue;
+      // Convert KHR → USD, USD stays as-is
+      final amountInUsd = CurrencyConverter.toUsd(tx.amount, tx.currencyCode);
 
-      if (tx.type == 'income') {
-        inc += tx.amount;
-      } else {
-        exp += tx.amount;
+      if (tx.isIncome) {
+        inc += amountInUsd;
+      } else if (tx.isExpense) {
+        exp += amountInUsd;
       }
     }
 
