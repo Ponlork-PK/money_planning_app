@@ -99,7 +99,7 @@ class LoanTabScreen extends StatelessWidget {
                               const SizedBox(height: 10),
                               ElevatedButton(
                                 onPressed: () => controller.loadLoans(),
-                                child: const Text("Retry"),
+                                child: Text('retry'.tr),
                               ),
                             ],
                           ),
@@ -109,10 +109,10 @@ class LoanTabScreen extends StatelessWidget {
                       final list = controller.filteredLoan; // ✅ fixed getter name
         
                       if (list.isEmpty) {
-                        return const Padding(
+                        return Padding(
                           padding:
-                              EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                          child: Text("No loans yet."),
+                              const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                          child: Text('noLoans'.tr),
                         );
                       }
         

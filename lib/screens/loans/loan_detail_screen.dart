@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:money_planning_app/controllers/loan_controller/loan_detail_controller.dart';
 import 'package:money_planning_app/models/loans_model.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
-import 'package:money_planning_app/utils/base_constants.dart';
 import 'package:money_planning_app/utils/routes_name.dart';
 
 class LoanDetailsScreen extends StatelessWidget {
@@ -17,7 +16,7 @@ class LoanDetailsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(onPressed: () => Get.back(), icon: const Icon(Icons.arrow_back)),
-        title: const Text(BaseConstants.loanDetailTitle)
+        title: Text('loanDetailTitle'.tr)
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
@@ -45,7 +44,7 @@ class LoanDetailsScreen extends StatelessWidget {
                   const SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: () => controller.loadLoanDetails(),
-                    child: const Text("Retry"),
+                    child: Text('retry'.tr),
                   ),
                 ],
               ),
@@ -86,7 +85,7 @@ class LoanDetailsScreen extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           child: Text(
-                            'Payment Schedule',
+                            'paymentSchedule'.tr,
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
                           ),
                         ),
@@ -94,9 +93,9 @@ class LoanDetailsScreen extends StatelessWidget {
                         Obx(() {
                           final list = controller.payments;
                           if (list.isEmpty) {
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              child: Text("No payment schedule yet."),
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              child: Text('noPaymentSchedule'.tr),
                             );
                           }
             
@@ -160,7 +159,7 @@ class LoanDetailsScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Current loan',
+                  Text('currentLoan'.tr,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
                   Text(
                     loan.lenderType,
@@ -212,17 +211,17 @@ class LoanDetailsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Loan Summary',
+            Text('loanSummary'.tr,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-            _row('Lender', loan.name),
-            _row('Original Amount', origText),
-            _row('Interest Rate', '${loan.interestRate.toStringAsFixed(1)}%'),
-            _row('Loan Term', loan.termMonths == null ? '-' : '${loan.termMonths} months'),
-            _row('Start', formatDate(loan.startDate)),
-            _row('End', loan.endDate == null ? '-' : formatDate(loan.endDate!)),
-            _row('Next repayment', loan.nextRepaymentDate == null ? '-' : formatDate(loan.nextRepaymentDate!)),
-            _row('Purpose', loan.purpose ?? '-')
+            _row('lenderLabel'.tr, loan.name),
+            _row('originalAmount'.tr, origText),
+            _row('interestRate'.tr, '${loan.interestRate.toStringAsFixed(1)}%'),
+            _row('loanTerm'.tr, loan.termMonths == null ? '-' : '${loan.termMonths} ${'months'.tr}'),
+            _row('startLabel'.tr, formatDate(loan.startDate)),
+            _row('endLabel'.tr, loan.endDate == null ? '-' : formatDate(loan.endDate!)),
+            _row('nextRepayment'.tr, loan.nextRepaymentDate == null ? '-' : formatDate(loan.nextRepaymentDate!)),
+            _row('purposeOfLoan'.tr, loan.purpose ?? '-')
           ],
         ),
       ),
@@ -248,7 +247,7 @@ class LoanDetailsScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       onPressed: () => controller.onSettleEarly(),
-                      child: const Text('Settle Loan Early'),
+                      child: Text('settleLoan'.tr),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -263,7 +262,7 @@ class LoanDetailsScreen extends StatelessWidget {
                         final refresh = await Get.toNamed(RoutesName.addLoan, arguments: controller.loan.value);
                         if(refresh) controller.loadLoanDetails();
                       },
-                      child: const Text('Edit Loan'),
+                      child: Text('editLoan'.tr),
                     ),
                   ),
                 ],

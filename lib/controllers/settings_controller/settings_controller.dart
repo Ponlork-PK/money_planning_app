@@ -28,7 +28,8 @@ class SettingsController extends GetxController {
   }
 
   void setLanguage(String code) {
-    language.value = code; // "EN" / "KH"
+    language.value = code; // 'en' or 'km'
+    Get.updateLocale(Locale(code));
   }
 
   void toggleNotification(bool value) {

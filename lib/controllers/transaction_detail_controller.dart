@@ -67,11 +67,11 @@ class TransactionDetailController extends GetxController {
     ];
 
     final tmpLabels = <String>[
-      'Type',
-      'Date',
-      'Payment Method',
-      'Currency',
-      'Note',
+      'txType'.tr,
+      'txDate'.tr,
+      'txPaymentMethod'.tr,
+      'txCurrency'.tr,
+      'txNote'.tr,
     ];
 
     final tmpValues = <String>[

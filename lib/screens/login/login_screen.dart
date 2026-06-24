@@ -29,10 +29,10 @@ class LoginScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Spacer(),
-            const Text(
-              "Welcome to\nMoney Planning App",
+            Text(
+              "welcomeTitle".tr,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 30,
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -67,10 +67,10 @@ class LoginScreen extends StatelessWidget {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        labelText: "Email",
+                        labelText: "emailLabel".tr,
                       ),
                       validator: (value) {
-                        if (value?.trim().isEmpty ?? true) return 'Email is required';
+                        if (value?.trim().isEmpty ?? true) return 'emailRequired'.tr;
                         return null;
                       },
                     ),
@@ -84,11 +84,11 @@ class LoginScreen extends StatelessWidget {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        labelText: "Password",
+                        labelText: "passwordLabel".tr,
                       ),
                       obscureText: true,
                       validator: (value) {
-                        if (value?.isEmpty ?? true) return 'Password is required';
+                        if (value?.isEmpty ?? true) return 'passwordRequired'.tr;
                         return null;
                       },
                     ),
@@ -121,9 +121,9 @@ class LoginScreen extends StatelessWidget {
                                         Get.offAllNamed(RoutesName.home);
                                       } else {
                                         final msg = controller.errorMessage.value.isEmpty
-                                            ? "Login failed"
+                                            ? "loginFailed".tr
                                             : controller.errorMessage.value;
-                                        Get.snackbar("Login", msg, snackPosition: SnackPosition.BOTTOM);
+                                        Get.snackbar("login".tr, msg, snackPosition: SnackPosition.BOTTOM);
                                       }
                                     },
                               child: loading
@@ -132,7 +132,7 @@ class LoginScreen extends StatelessWidget {
                                       width: 18,
                                       child: CircularProgressIndicator(strokeWidth: 2),
                                     )
-                                  : const Text("Get Start"),
+                                  : Text("getStart".tr),
                             );
                           }),
                         ),
