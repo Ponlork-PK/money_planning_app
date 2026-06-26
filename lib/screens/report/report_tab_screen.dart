@@ -1,11 +1,13 @@
 import 'dart:math' as math;
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/controllers/report_controller.dart';
 import 'package:money_planning_app/controllers/settings_controller/settings_controller.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
 import 'package:money_planning_app/utils/currency_converter.dart';
+import 'package:money_planning_app/widgets/app_page_layout.dart';
+import 'package:money_planning_app/widgets/app_segmented_control.dart';
+import 'package:money_planning_app/widgets/app_state_indicator.dart';
 
 class ReportTabScreen extends StatelessWidget {
   ReportTabScreen({super.key});
@@ -31,103 +33,46 @@ class ReportTabScreen extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.only(top: 30),
-      color: BaseColors.primary,
+    return AppPageLayout(
       child: RefreshIndicator(
         onRefresh: () => controller.loadReport(),
-        child: Container(
-          padding: const EdgeInsets.only(top: 10),
-          decoration: BoxDecoration(
-            color: BaseColors.background,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(30),
-              topRight: Radius.circular(30),
-            ),
-          ),
-          child: SingleChildScrollView(
-            physics: AlwaysScrollableScrollPhysics(),
-            child: Column(
-              spacing: 10,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Obx(
-                  () => Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.only(left: 16, right: 16, top: 10),
-                    color: Colors.transparent,
-                    child: CupertinoSlidingSegmentedControl<int>(
-                      groupValue: controller.selectedIndex.value,
-                      thumbColor: BaseColors.primary,
-                      children: {
-                        0: _buildSegment(context, "daily".tr, 0),
-                        1: _buildSegment(context, "weekly".tr, 1),
-                        2: _buildSegment(context, "monthly".tr, 2),
-                      },
-                      onValueChanged: (value) {
-                        if (value != null) controller.setIndex(value);
-                      },
-                    ),
-                  ),
-                ),
-            
-                // loading / error line
-                Obx(() {
-                  if (controller.isLoading.value) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                      child: LinearProgressIndicator(minHeight: 2),
-                    );
-                  }
-                  final err = controller.error.value;
-                  if (err != null) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                      child: Text(
-                        err,
-                        style: const TextStyle(color: Colors.red),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            spacing: 10,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Period switcher
+              Obx(() => AppSegmentedControl(
+                    selectedIndex: controller.selectedIndex.value,
+                    labels: ['daily'.tr, 'weekly'.tr, 'monthly'.tr],
+                    onChanged: controller.setIndex,
+                  )),
+
+              // Loading / error
+              Obx(() => AppStateIndicator(
+                    isLoading: controller.isLoading.value,
+                    error: controller.error.value,
+                  )),
+
+              Obx(() => _buildIncomeExpenseChart(context)),
+
+              Padding(
+                padding: const EdgeInsets.only(left: 16.0, top: 6),
+                child: Text(
+                  'topTs'.tr,
+                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: BaseColors.textPrimary,
                       ),
-                    );
-                  }
-                  return const SizedBox.shrink();
-                }),
-            
-                Obx(() => _buildIncomeExpenseChart(context)),
-            
-                // _buildPieChart(context),
-            
-                Padding(
-                  padding: const EdgeInsets.only(left: 16.0, top: 6),
-                  child: Text(
-                    "topTs".tr,
-                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: BaseColors.textPrimary,
-                        ),
-                  ),
                 ),
-            
-                Obx(() => _buildTopTransactions()),
-                const SizedBox(height: 16),
-              ],
-            ),
+              ),
+
+              Obx(() => _buildTopTransactions()),
+              const SizedBox(height: 16),
+            ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildSegment(BuildContext context, String text, int index) {
-    final isSelected = controller.selectedIndex.value == index;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-              color: isSelected ? BaseColors.background : BaseColors.textPrimary,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            ),
       ),
     );
   }
