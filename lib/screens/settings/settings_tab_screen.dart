@@ -95,7 +95,7 @@ class SettingsTabScreen extends StatelessWidget {
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: BaseColors.expense,
-                    disabledBackgroundColor: BaseColors.expense.withOpacity(0.6),
+                    disabledBackgroundColor: BaseColors.expense.withValues(alpha: 0.6),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -144,7 +144,7 @@ class SettingsTabScreen extends StatelessWidget {
 
             const SizedBox(width: 8),
 
-            // ✅ Dropdown
+            // ✅ Dropdown — uses canonical codes (USD / KHR) as values
             Obx(() => DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     borderRadius: BorderRadius.circular(20),
@@ -156,7 +156,8 @@ class SettingsTabScreen extends StatelessWidget {
                     items: controller.currencies
                         .map((c) => DropdownMenuItem<String>(
                               value: c,
-                              child: Text(c),
+                              // Show localized label, but store canonical code
+                              child: Text(c == 'USD' ? 'usd'.tr : 'khr'.tr),
                             ))
                         .toList(),
                     onChanged: (val) {

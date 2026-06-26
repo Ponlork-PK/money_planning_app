@@ -3,7 +3,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/controllers/report_controller.dart';
+import 'package:money_planning_app/controllers/settings_controller/settings_controller.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
+import 'package:money_planning_app/utils/currency_converter.dart';
 
 class ReportTabScreen extends StatelessWidget {
   ReportTabScreen({super.key});
@@ -133,6 +135,7 @@ class ReportTabScreen extends StatelessWidget {
   Widget _buildIncomeExpenseChart(BuildContext context) {
     final double income = controller.incomeTotal;
     final double expense = controller.expenseTotal;
+    final String sym = CurrencyConverter.symbol(SettingsController.to.selectedCurrency.value);
 
     const double maxBarHeight = 120.0;
     final double maxVal = math.max(income, expense).toDouble();
@@ -166,13 +169,13 @@ class ReportTabScreen extends StatelessWidget {
                 _barWithLabel(
                   color: BaseColors.income,
                   label: "income".tr,
-                  amount: "\$${income.toStringAsFixed(2)}",
+                  amount: "$sym${income.toStringAsFixed(2)}",
                   height: incomeH,
                 ),
                 _barWithLabel(
                   color: BaseColors.expense,
                   label: "expense".tr,
-                  amount: "\$${expense.toStringAsFixed(2)}",
+                  amount: "$sym${expense.toStringAsFixed(2)}",
                   height: expenseH,
                 ),
               ],

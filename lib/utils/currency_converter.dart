@@ -24,4 +24,22 @@ class CurrencyConverter {
     }
     return amount; // already KHR
   }
+
+  /// Convert [amount] stored in [fromCurrency] to [toCurrency].
+  /// Pass canonical currency codes: 'USD' or 'KHR'.
+  static double convert(double amount, String fromCurrency, String toCurrency) {
+    final from = fromCurrency.toUpperCase().trim();
+    final to = toCurrency.toUpperCase().trim();
+    if (from == to) return amount;
+    // First normalise to USD, then convert to target
+    final usd = toUsd(amount, from);
+    if (to == 'USD') return usd;
+    if (to == 'KHR') return usd * BaseConstants.khrPerUsd;
+    return usd; // unknown target → return USD
+  }
+
+  /// Returns the display symbol for a currency code.
+  static String symbol(String currencyCode) {
+    return currencyCode.toUpperCase().trim() == 'KHR' ? '៛' : '\$';
+  }
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:money_planning_app/controllers/settings_controller/settings_controller.dart';
 import 'package:money_planning_app/controllers/transaction_controller.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
+import 'package:money_planning_app/utils/currency_converter.dart';
 import 'package:money_planning_app/utils/routes_name.dart';
 import 'package:money_planning_app/widgets/item_list_widget.dart';
 
@@ -82,7 +84,7 @@ class TransactionTabScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Obx(() {
-                final cur = controller.currency.value;
+                final sym = CurrencyConverter.symbol(SettingsController.to.selectedCurrency.value);
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -95,7 +97,7 @@ class TransactionTabScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      "$cur ${controller.balance.value.toStringAsFixed(2)}",
+                      "$sym${controller.balance.value.toStringAsFixed(2)}",
                       style: Theme.of(context)
                           .textTheme
                           .bodyMedium!

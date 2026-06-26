@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:money_planning_app/controllers/settings_controller/settings_controller.dart';
 import 'package:money_planning_app/models/category_model.dart';
 import 'package:money_planning_app/models/transaction_item_model.dart';
 import 'package:money_planning_app/services/api_service.dart';
@@ -63,15 +64,21 @@ class ReportController extends GetxController {
       t.type.toLowerCase().trim() == 'expense';
 
   // -------------------------
-  // Totals — cross-currency (convert KHR → USD)
+  // Totals — convert to the display currency selected in Settings
   // -------------------------
-  double get incomeTotal => transactions
-      .where((t) => _isIncome(t))
-      .fold<double>(0.0, (sum, t) => sum + CurrencyConverter.toUsd(t.amount, t.currencyCode));
+  double get incomeTotal {
+    final target = SettingsController.to.selectedCurrency.value;
+    return transactions
+        .where((t) => _isIncome(t))
+        .fold<double>(0.0, (sum, t) => sum + CurrencyConverter.convert(t.amount, t.currencyCode, target));
+  }
 
-  double get expenseTotal => transactions
-      .where((t) => _isExpense(t))
-      .fold<double>(0.0, (sum, t) => sum + CurrencyConverter.toUsd(t.amount, t.currencyCode));
+  double get expenseTotal {
+    final target = SettingsController.to.selectedCurrency.value;
+    return transactions
+        .where((t) => _isExpense(t))
+        .fold<double>(0.0, (sum, t) => sum + CurrencyConverter.convert(t.amount, t.currencyCode, target));
+  }
 
   // -------------------------
   // Expense by category
@@ -230,6 +237,13 @@ class ReportController extends GetxController {
     // Realtime: auto-refresh when transactions change
     _realtime.addTransactionListener(_onTransactionChange);
 
+    // Recompute display when currency changes (transactions already cached)
+    ever<String>(SettingsController.to.selectedCurrency, (_) {
+      // Force Obx widgets to rebuild — transactions list already loaded
+      transactions.refresh();
+      topTransactions.refresh();
+    });
+
     // reload when period changes
     ever<int>(selectedIndex, (_) => loadReport());
 
@@ -284,7 +298,7 @@ class ReportController extends GetxController {
 
   PdfColor pdfColorOfCategory(int categoryId) {
     final c = colorOfCategory(categoryId); // your existing Color
-    return PdfColor.fromInt(c.value);
+    return PdfColor.fromInt(c.toARGB32());
   }
 
 }

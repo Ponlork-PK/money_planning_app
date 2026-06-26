@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/controllers/bottom_nav_controller.dart';
+import 'package:money_planning_app/controllers/settings_controller/settings_controller.dart';
 import 'package:money_planning_app/screens/loans/loan_tab_screen.dart';
 import 'package:money_planning_app/screens/settings/settings_tab_screen.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
@@ -13,6 +14,10 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Initialize SettingsController first as a permanent singleton so that
+    // DashboardController, TransactionTabController, and ReportController
+    // can always find it via SettingsController.to (Get.find).
+    Get.put(SettingsController(), permanent: true);
     final controller = Get.put(BottomNavController());
 
     final pages = [

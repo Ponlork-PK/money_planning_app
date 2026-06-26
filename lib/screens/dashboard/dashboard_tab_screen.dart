@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/controllers/dash_board_controller.dart';
+import 'package:money_planning_app/controllers/settings_controller/settings_controller.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
+import 'package:money_planning_app/utils/currency_converter.dart';
 import 'package:money_planning_app/utils/routes_name.dart';
 import 'package:money_planning_app/widgets/item_list_widget.dart';
 
@@ -72,13 +74,16 @@ class DashboardTabScreen extends StatelessWidget {
                                   .copyWith(
                                       color: BaseColors.textPrimary,
                                       fontWeight: FontWeight.bold)),
-                          Obx(() => Text(
-                                "\$${controller.summary.value.balance.toStringAsFixed(2)}",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium!
-                                    .copyWith(color: BaseColors.textPrimary),
-                              )),
+                          Obx(() {
+                                final sym = CurrencyConverter.symbol(SettingsController.to.selectedCurrency.value);
+                                return Text(
+                                  "$sym${controller.summary.value.balance.toStringAsFixed(2)}",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium!
+                                      .copyWith(color: BaseColors.textPrimary),
+                                );
+                              }),
                         ],
                       ),
                     ),
@@ -97,13 +102,16 @@ class DashboardTabScreen extends StatelessWidget {
                                       .copyWith(
                                           color: BaseColors.income,
                                           fontWeight: FontWeight.bold)),
-                              Obx(() => Text(
-                                    "\$${controller.summary.value.income.toStringAsFixed(2)}",
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall!
-                                        .copyWith(color: BaseColors.income),
-                                  )),
+                              Obx(() {
+                                    final sym = CurrencyConverter.symbol(SettingsController.to.selectedCurrency.value);
+                                    return Text(
+                                      "$sym${controller.summary.value.income.toStringAsFixed(2)}",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall!
+                                          .copyWith(color: BaseColors.income),
+                                    );
+                                  }),
                             ],
                           ),
                         ),
@@ -122,13 +130,16 @@ class DashboardTabScreen extends StatelessWidget {
                                       .copyWith(
                                           color: BaseColors.expense,
                                           fontWeight: FontWeight.bold)),
-                              Obx(() => Text(
-                                    "\$${controller.summary.value.expense.toStringAsFixed(2)}",
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall!
-                                        .copyWith(color: BaseColors.expense),
-                                  )),
+                              Obx(() {
+                                    final sym = CurrencyConverter.symbol(SettingsController.to.selectedCurrency.value);
+                                    return Text(
+                                      "$sym${controller.summary.value.expense.toStringAsFixed(2)}",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall!
+                                          .copyWith(color: BaseColors.expense),
+                                    );
+                                  }),
                             ],
                           ),
                         ),

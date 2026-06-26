@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:money_planning_app/controllers/settings_controller/settings_controller.dart';
 import 'package:money_planning_app/models/transaction_item_model.dart';
 import 'package:money_planning_app/services/api_service.dart';
 import 'package:money_planning_app/services/realtime_service.dart';
@@ -14,8 +15,7 @@ class TransactionTabController extends GetxController {
 
   final transactions = <TransactionItemModel>[].obs;
 
-  // Summary — always in USD (cross-currency)
-  final currency = 'USD'.obs;
+  // Summary — computed in the currently selected display currency
   final income = 0.0.obs;
   final expense = 0.0.obs;
   final balance = 0.0.obs;
@@ -24,6 +24,10 @@ class TransactionTabController extends GetxController {
   void onInit() {
     super.onInit();
     _realtime.addTransactionListener(_onTransactionChange);
+
+    // Recalculate on currency change without a new network request
+    ever(SettingsController.to.selectedCurrency, (_) => _calcSummary());
+
     refreshTransactions();
   }
 
@@ -54,19 +58,24 @@ class TransactionTabController extends GetxController {
     }
   }
 
-  /// Calculate summary by converting ALL transactions to USD.
+  /// Calculate summary, converting each transaction to the currently selected currency.
   void _calcSummary() {
+    final targetCurrency = SettingsController.to.selectedCurrency.value;
+
     double inc = 0;
     double exp = 0;
 
     for (final tx in transactions) {
-      // Convert KHR → USD, USD stays as-is
-      final amountInUsd = CurrencyConverter.toUsd(tx.amount, tx.currencyCode);
+      final converted = CurrencyConverter.convert(
+        tx.amount,
+        tx.currencyCode,
+        targetCurrency,
+      );
 
       if (tx.isIncome) {
-        inc += amountInUsd;
+        inc += converted;
       } else if (tx.isExpense) {
-        exp += amountInUsd;
+        exp += converted;
       }
     }
 
