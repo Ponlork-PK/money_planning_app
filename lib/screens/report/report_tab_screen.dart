@@ -7,7 +7,7 @@ import 'package:money_planning_app/utils/base_colors.dart';
 import 'package:money_planning_app/utils/currency_converter.dart';
 import 'package:money_planning_app/widgets/app_page_layout.dart';
 import 'package:money_planning_app/widgets/app_segmented_control.dart';
-import 'package:money_planning_app/widgets/app_state_indicator.dart';
+// import 'package:money_planning_app/widgets/app_state_indicator.dart';
 
 class ReportTabScreen extends StatelessWidget {
   ReportTabScreen({super.key});
@@ -50,10 +50,10 @@ class ReportTabScreen extends StatelessWidget {
                   )),
 
               // Loading / error
-              Obx(() => AppStateIndicator(
-                    isLoading: controller.isLoading.value,
-                    error: controller.error.value,
-                  )),
+              // Obx(() => AppStateIndicator(
+              //       isLoading: controller.isLoading.value,
+              //       error: controller.error.value,
+              //     )),
 
               Obx(() => _buildIncomeExpenseChart(context)),
 
@@ -160,99 +160,6 @@ class ReportTabScreen extends StatelessWidget {
       ],
     );
   }
-
-  // Widget _buildPieChart(BuildContext context) {
-  //   return Obx(() {
-  //     final expenseMap = controller.expenseByCategory; // Map<int,double>
-
-  //     final legendCategories = controller.categories.where((c) {
-  //       final cid = c.id;
-  //       if (cid == null) return false;
-  //       final v = expenseMap[cid] ?? 0.0;
-  //       return v > 0.0;
-  //     }).toList();
-
-  //     return Card(
-  //       elevation: 2,
-  //       margin: const EdgeInsets.symmetric(horizontal: 16),
-  //       child: Padding(
-  //         padding: const EdgeInsets.symmetric(vertical: 12.0),
-  //         child: Column(
-  //           mainAxisSize: MainAxisSize.min,
-  //           crossAxisAlignment: CrossAxisAlignment.center,
-  //           children: [
-  //             Text(
-  //               "Spending by category",
-  //               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-  //                     fontWeight: FontWeight.bold,
-  //                     color: BaseColors.textPrimary,
-  //                   ),
-  //             ),
-  //             const SizedBox(height: 16),
-  //             Row(
-  //               mainAxisAlignment: MainAxisAlignment.center,
-  //               crossAxisAlignment: CrossAxisAlignment.center,
-  //               children: [
-  //                 SizedBox(
-  //                   height: 170,
-  //                   width: 170,
-  //                   child: PieChart(
-  //                     PieChartData(
-  //                       centerSpaceRadius: 32,
-  //                       sections: controller.sections,
-  //                       sectionsSpace: 1,
-  //                     ),
-  //                   ),
-  //                 ),
-  //                 const SizedBox(width: 8),
-  //                 if (legendCategories.isEmpty)
-  //                   Padding(
-  //                     padding: const EdgeInsets.only(left: 8.0),
-  //                     child: Text(
-  //                       "No expenses",
-  //                       style: Theme.of(context)
-  //                           .textTheme
-  //                           .bodySmall
-  //                           ?.copyWith(color: Colors.black54),
-  //                     ),
-  //                   )
-  //                 else
-  //                   Column(
-  //                     crossAxisAlignment: CrossAxisAlignment.start,
-  //                     mainAxisAlignment: MainAxisAlignment.center,
-  //                     children: legendCategories.map((c) {
-  //                       final cid = c.id!;
-  //                       final value = expenseMap[cid] ?? 0.0;
-
-  //                       return Padding(
-  //                         padding: const EdgeInsets.symmetric(vertical: 4),
-  //                         child: Row(
-  //                           children: [
-  //                             CircleAvatar(
-  //                               backgroundColor: controller.colorOfCategory(cid),
-  //                               radius: 7,
-  //                             ),
-  //                             const SizedBox(width: 6),
-  //                             Text(
-  //                               "${c.name} (\$${value.toStringAsFixed(0)})",
-  //                               style: const TextStyle(
-  //                                 fontSize: 14,
-  //                                 color: Colors.black87,
-  //                               ),
-  //                             ),
-  //                           ],
-  //                         ),
-  //                       );
-  //                     }).toList(),
-  //                   ),
-  //               ],
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     );
-  //   });
-  // }
 
   Widget _buildTopTransactions() {
     final list = controller.topTransactions;

@@ -48,7 +48,7 @@ class DetailRowWidget extends StatelessWidget {
                 .copyWith(color: hasIcon ? BaseColors.textPrimary : Colors.black54),
           ),
           const Spacer(),
-          Flexible(
+          Expanded(
             child: Text(
               value,
               textAlign: TextAlign.right,
