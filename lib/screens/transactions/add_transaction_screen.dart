@@ -14,16 +14,20 @@ class AddTransactionScreen extends StatelessWidget {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.onSecondary,
         appBar: _buildAppBar(),
         body: _buildBody(context),
       ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar() =>
-      AppBar(
-        leading: IconButton(onPressed: () => Get.back(result: true), icon: const Icon(Icons.arrow_back)),
-        title: Obx(() => Text(controller.isEdit.value ? 'updateTransaction'.tr : 'addTransactionTitle'.tr)));
+  PreferredSizeWidget _buildAppBar() => AppBar(
+      leading: IconButton(
+          onPressed: () => Get.back(result: true),
+          icon: const Icon(Icons.arrow_back)),
+      title: Obx(() => Text(controller.isEdit.value
+          ? 'updateTransaction'.tr
+          : 'addTransactionTitle'.tr)));
 
   Widget _buildBody(BuildContext context) => Container(
         width: double.infinity,
@@ -31,9 +35,9 @@ class AddTransactionScreen extends StatelessWidget {
         decoration: const BoxDecoration(color: BaseColors.primary),
         child: Container(
           padding: const EdgeInsets.only(top: 16),
-          decoration: const BoxDecoration(
-            color: BaseColors.background,
-            borderRadius: BorderRadius.only(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.onSecondary,
+            borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(30),
               topRight: Radius.circular(30),
             ),
@@ -69,9 +73,14 @@ class AddTransactionScreen extends StatelessWidget {
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyMedium!
-                                  .copyWith(color: BaseColors.textPrimary),
+                                  .copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .surface),
                               decoration: InputDecoration(
                                 hintText: 'amountHint'.tr,
+                                fillColor:
+                                    Theme.of(context).colorScheme.onSurface,
                                 contentPadding: EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 8),
                                 border: const OutlineInputBorder(
@@ -194,14 +203,14 @@ class AddTransactionScreen extends StatelessWidget {
                               .copyWith(fontWeight: FontWeight.bold),
                         ),
                         InkWell(
-                          onTap: () => controller.opendDatePicker(),
+                          onTap: () => controller.opendDatePicker(context),
                           borderRadius: BorderRadius.circular(16),
                           child: Container(
                             width: double.infinity,
                             padding: EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 10),
                             decoration: BoxDecoration(
-                              color: Colors.grey.withAlpha(50),
+                              color: Theme.of(context).colorScheme.onSurface,
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Obx(() {
@@ -232,14 +241,16 @@ class AddTransactionScreen extends StatelessWidget {
                         TextFormField(
                           controller: controller.purposeCtrl,
                           maxLines: 5,
-                          style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: BaseColors.textPrimary),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium!
+                              .copyWith(
+                                  color: Theme.of(context).colorScheme.surface),
                           decoration: InputDecoration(
                               filled: true,
-                              fillColor: Colors.grey.shade100,
-                              hintText: 'purposeLabel'.tr,
-                              border: OutlineInputBorder(
-                                  borderSide: BorderSide.none,
-                                  borderRadius: BorderRadius.circular(16))),
+                              fillColor:
+                                  Theme.of(context).colorScheme.onSurface,
+                              hintText: 'purposeLabel'.tr),
                         ),
                       ],
                     ),
@@ -254,12 +265,20 @@ class AddTransactionScreen extends StatelessWidget {
                       children: [
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: controller.isSaving.value ? null : ()async{
+                                onPressed: controller.isSaving.value
+                                    ? null
+                                    : () async {
                               await controller.submit();
                             },
                             child: controller.isSaving.value
-                                ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                                : Text(controller.isEdit.value ? 'updateBtn'.tr : 'saveBtn'.tr),
+                                    ? const SizedBox(
+                                        height: 18,
+                                        width: 18,
+                                        child: CircularProgressIndicator(
+                                            strokeWidth: 2))
+                                    : Text(controller.isEdit.value
+                                        ? 'updateBtn'.tr
+                                        : 'saveBtn'.tr),
                           ),
                         ),
                       ],
@@ -290,7 +309,7 @@ class AddTransactionScreen extends StatelessWidget {
                 style: Theme.of(context)
                     .textTheme
                     .bodyMedium!
-                    .copyWith(color: BaseColors.appBarTitle),
+                    .copyWith(color: BaseColors.white),
               ),
             )),
 
@@ -299,6 +318,7 @@ class AddTransactionScreen extends StatelessWidget {
         // ✅ Dropdown
         Obx(() => DropdownButtonHideUnderline(
               child: DropdownButton<String>(
+                dropdownColor: Theme.of(context).colorScheme.onSecondary,
                 borderRadius: BorderRadius.circular(20),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 value: controller.selectedCurrency.value,
@@ -338,9 +358,9 @@ class AddTransactionScreen extends StatelessWidget {
           TextFormField(
             controller: controller.itemNameCtrl,
             decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.grey.withAlpha(50),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              fillColor: Theme.of(context).colorScheme.onSurface,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               hintText: 'itemNameHint'.tr,
               border: OutlineInputBorder(
                 borderSide: BorderSide.none,
@@ -360,8 +380,9 @@ class AddTransactionScreen extends StatelessWidget {
             controller: controller.paymentMethodCtrl,
             decoration: InputDecoration(
               filled: true,
-              fillColor: Colors.grey.withAlpha(50),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              fillColor: Theme.of(context).colorScheme.onSurface,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               hintText: 'paymentMethodHint'.tr,
               border: OutlineInputBorder(
                 borderSide: BorderSide.none,
