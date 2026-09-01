@@ -259,18 +259,18 @@ class AddTransactionScreen extends StatelessWidget {
 
                 // save button
                 Obx(() => SafeArea(
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton(
                                 onPressed: controller.isSaving.value
                                     ? null
                                     : () async {
-                              await controller.submit();
-                            },
-                            child: controller.isSaving.value
+                                        await controller.submit();
+                                      },
+                                child: controller.isSaving.value
                                     ? const SizedBox(
                                         height: 18,
                                         width: 18,
@@ -279,12 +279,12 @@ class AddTransactionScreen extends StatelessWidget {
                                     : Text(controller.isEdit.value
                                         ? 'updateBtn'.tr
                                         : 'saveBtn'.tr),
-                          ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                ))
+                      ),
+                    ))
               ],
             ),
           ),

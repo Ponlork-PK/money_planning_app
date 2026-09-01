@@ -28,9 +28,9 @@ class AppPageLayout extends StatelessWidget {
       child: Container(
         width: double.infinity,
         padding: EdgeInsets.only(top: innerTopPadding),
-        decoration: const BoxDecoration(
-          color: BaseColors.background,
-          borderRadius: BorderRadius.only(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.onSecondary,
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(30),
             topRight: Radius.circular(30),
           ),

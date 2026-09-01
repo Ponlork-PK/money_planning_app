@@ -120,10 +120,7 @@ class DashboardTabScreen extends StatelessWidget {
                         return Center(
                           child: Text(
                             'noTransaction'.tr,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium!
-                                .copyWith(color: BaseColors.itemIconBg),
+                            style: Theme.of(context).textTheme.bodyMedium!,
                           ),
                         );
                       }

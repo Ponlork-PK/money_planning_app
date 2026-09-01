@@ -37,12 +37,13 @@ class SummaryCardWidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
       margin: const EdgeInsets.only(left: 20, right: 20, top: 26),
       decoration: BoxDecoration(
-        color: BaseColors.background,
+        color: Theme.of(context).colorScheme.onSurface,
         boxShadow: [
           BoxShadow(
-            color: BaseColors.itemIconBg,
-            blurRadius: 4,
-            spreadRadius: 4,
+            color: BaseColors.lightGray.withValues(alpha: .05),
+            offset: Offset(0, 1),
+            blurRadius: 2,
+            spreadRadius: .5,
           ),
         ],
         borderRadius: BorderRadius.circular(20),
@@ -60,7 +61,7 @@ class SummaryCardWidget extends StatelessWidget {
                 Text(
                   balanceLabel ?? 'Balance',
                   style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                        color: BaseColors.textPrimary,
+                        color: Theme.of(context).colorScheme.secondary,
                         fontWeight: FontWeight.bold,
                       ),
                 ),
@@ -69,7 +70,7 @@ class SummaryCardWidget extends StatelessWidget {
                   style: Theme.of(context)
                       .textTheme
                       .bodyMedium!
-                      .copyWith(color: BaseColors.textPrimary),
+                      .copyWith(color: Theme.of(context).colorScheme.secondary),
                 ),
               ],
             ),
@@ -121,10 +122,7 @@ class SummaryCardWidget extends StatelessWidget {
         ),
         Text(
           '$currencySymbol${amount.toStringAsFixed(2)}',
-          style: Theme.of(context)
-              .textTheme
-              .bodySmall!
-              .copyWith(color: color),
+          style: Theme.of(context).textTheme.bodySmall!.copyWith(color: color),
         ),
       ],
     );
