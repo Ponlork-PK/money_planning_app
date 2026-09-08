@@ -35,6 +35,7 @@ class AppSegmentedControl extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       color: Colors.transparent,
       child: CupertinoSlidingSegmentedControl<int>(
+        backgroundColor: Theme.of(context).colorScheme.onSurface,
         groupValue: selectedIndex,
         thumbColor: BaseColors.primary,
         children: children,
@@ -52,7 +53,7 @@ class AppSegmentedControl extends StatelessWidget {
       child: Text(
         text,
         style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-              color: isSelected ? BaseColors.background : BaseColors.textPrimary,
+              color: isSelected ? BaseColors.background : BaseColors.grey,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
       ),

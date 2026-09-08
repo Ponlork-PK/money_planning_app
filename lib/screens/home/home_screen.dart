@@ -31,17 +31,18 @@ class HomeScreen extends StatelessWidget {
     return Obx(() {
       final index = controller.currentIndex.value;
       return Scaffold(
-        backgroundColor: BaseColors.background,
+        backgroundColor: Theme.of(context).colorScheme.onSecondary,
         body: IndexedStack(
           index: index,
           children: pages,
         ),
         bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: Theme.of(context).colorScheme.onSecondary,
           currentIndex: index,
           onTap: controller.changeTab,
           type: BottomNavigationBarType.fixed,
           selectedItemColor: BaseColors.primary,
-          unselectedItemColor: BaseColors.textSecondary,
+          unselectedItemColor: Theme.of(context).colorScheme.secondary,
           showUnselectedLabels: true,
           items: [
             BottomNavigationBarItem(

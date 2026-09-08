@@ -17,15 +17,21 @@ class ReportTabScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.onSecondary,
       appBar: AppBar(
         title: Text("report".tr),
         actions: [
           Obx(() => IconButton(
-            onPressed: controller.isExporting.value ? null : () => controller.exportPdf(),
-            icon: controller.isExporting.value
-                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Icon(Icons.file_open_outlined),
-          ))
+                onPressed: controller.isExporting.value
+                    ? null
+                    : () => controller.exportPdf(),
+                icon: controller.isExporting.value
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.file_open_outlined),
+              ))
         ],
       ),
       body: _buildBody(context),
@@ -61,9 +67,8 @@ class ReportTabScreen extends StatelessWidget {
                 padding: const EdgeInsets.only(left: 16.0, top: 6),
                 child: Text(
                   'topTs'.tr,
-                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: BaseColors.textPrimary,
                       ),
                 ),
               ),
@@ -80,7 +85,8 @@ class ReportTabScreen extends StatelessWidget {
   Widget _buildIncomeExpenseChart(BuildContext context) {
     final double income = controller.incomeTotal;
     final double expense = controller.expenseTotal;
-    final String sym = CurrencyConverter.symbol(SettingsController.to.selectedCurrency.value);
+    final String sym =
+        CurrencyConverter.symbol(SettingsController.to.selectedCurrency.value);
 
     const double maxBarHeight = 120.0;
     final double maxVal = math.max(income, expense).toDouble();
@@ -103,7 +109,6 @@ class ReportTabScreen extends StatelessWidget {
               "in_and_exp".tr,
               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: BaseColors.textPrimary,
                   ),
             ),
             const SizedBox(height: 16),
@@ -131,12 +136,11 @@ class ReportTabScreen extends StatelessWidget {
     );
   }
 
-  Widget _barWithLabel({
-    required double height,
-    required Color color,
-    required String label,
-    required String amount
-  }) {
+  Widget _barWithLabel(
+      {required double height,
+      required Color color,
+      required String label,
+      required String amount}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -186,7 +190,8 @@ class ReportTabScreen extends StatelessWidget {
                 ? tx.note!.trim()
                 : "Transaction";
 
-        final catName = tx.categoryName ?? controller.categoryName(tx.categoryId);
+        final catName =
+            tx.categoryName ?? controller.categoryName(tx.categoryId);
 
         return ListTile(
           onTap: () => debugPrint("Tapped ${tx.id}"),
@@ -196,9 +201,18 @@ class ReportTabScreen extends StatelessWidget {
           ),
           title: Text(
             title,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            style: Theme.of(context)
+                .textTheme
+                .bodyLarge!
+                .copyWith(color: Theme.of(context).colorScheme.surface),
           ),
-          subtitle: Text(catName),
+          subtitle: Text(
+            catName,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium!
+                .copyWith(color: Theme.of(context).colorScheme.surface),
+          ),
           trailing: Text(
             "$sign${tx.currencyCode.toUpperCase()} ${tx.amount.toStringAsFixed(2)}",
             style: TextStyle(

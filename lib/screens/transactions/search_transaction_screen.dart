@@ -15,6 +15,7 @@ class SearchTransactionScreen extends StatelessWidget {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.onSecondary,
         appBar: _buildAppbar(context),
         body: Obx(() => _buildBody()),
       ),
@@ -30,6 +31,10 @@ class SearchTransactionScreen extends StatelessWidget {
       ),
       title: TextFormField(
         controller: controller.searchCtrl,
+        style: Theme.of(context)
+            .textTheme
+            .bodyLarge!
+            .copyWith(color: BaseColors.white),
         decoration: InputDecoration(
           contentPadding: const EdgeInsets.all(0),
           filled: true,
@@ -37,13 +42,13 @@ class SearchTransactionScreen extends StatelessWidget {
           hintText: "searchTs".tr,
           hintStyle: Theme.of(context)
               .textTheme
-              .bodyMedium!
-              .copyWith(color: BaseColors.darkTextPrimary),
+              .bodyLarge!
+              .copyWith(color: BaseColors.white),
           enabledBorder: const OutlineInputBorder(borderSide: BorderSide.none),
           focusedBorder: const OutlineInputBorder(borderSide: BorderSide.none),
-          focusColor: BaseColors.appBarTitle,
+          focusColor: BaseColors.white,
         ),
-        cursorColor: BaseColors.background,
+        cursorColor: BaseColors.white,
       ),
     );
   }
@@ -95,7 +100,8 @@ class SearchTransactionScreen extends StatelessWidget {
               icons: tx.type == 'expense' ? Icons.payment : Icons.attach_money,
               itemName: name,
               price: price,
-              color: tx.type == 'expense' ? BaseColors.expense : BaseColors.income,
+              color:
+                  tx.type == 'expense' ? BaseColors.expense : BaseColors.income,
             ),
           ),
         );

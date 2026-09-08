@@ -40,7 +40,7 @@ class SummaryCardWidget extends StatelessWidget {
         color: Theme.of(context).colorScheme.onSurface,
         boxShadow: [
           BoxShadow(
-            color: BaseColors.lightGray.withValues(alpha: .05),
+            color: BaseColors.lightGrey.withValues(alpha: .05),
             offset: Offset(0, 1),
             blurRadius: 2,
             spreadRadius: .5,
