@@ -86,6 +86,10 @@ class Language extends Translations {
       "purposeOfLoan": "Purpose",
       "settleLoan": "Settle Loan Early",
       "editLoan": "Edit Loan",
+      "lender": "Lender",
+      "repay": "next repayment",
+      "paid": "Paid",
+      "viewDetail": "View Details",
 
       // --- Add Loan ---
       "addLoanTitle": "Add New Loan",
@@ -212,6 +216,10 @@ class Language extends Translations {
       "purposeOfLoan": "គោលបំណងកម្ចី",
       "settleLoan": "សងកម្ចីមុនកំណត់",
       "editLoan": "កែប្រែកម្ចី",
+      "lender": "អ្នកឲ្យខ្ចី",
+      "repay": "ថ្ងៃបង់បន្ទាប់",
+      "paid": "បានបង់",
+      "viewDetail": "មើលលម្អិត",
 
       // --- Add Loan ---
       "addLoanTitle": "បន្ថែមកម្ចីថ្មី",

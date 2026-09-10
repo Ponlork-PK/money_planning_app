@@ -15,7 +15,15 @@ class LoanTabScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("loan".tr)),
+      backgroundColor: Theme.of(context).colorScheme.onSecondary,
+      appBar: AppBar(
+          title: Text(
+        "loan".tr,
+        style: Theme.of(context)
+            .textTheme
+            .titleLarge!
+            .copyWith(color: BaseColors.white),
+      )),
       body: _buildBody(context),
       floatingActionButton: FloatingActionButton(
         shape: const CircleBorder(),
@@ -51,10 +59,9 @@ class LoanTabScreen extends StatelessWidget {
                     ],
                     onChanged: controller.setIndex,
                   )),
-        
+
               // Content
               Obx(() {
-        
                 final err = controller.error.value;
                 if (err != null && err.isNotEmpty) {
                   return Padding(
@@ -78,9 +85,9 @@ class LoanTabScreen extends StatelessWidget {
                     ),
                   );
                 }
-        
+
                 final list = controller.filteredLoan;
-        
+
                 if (list.isEmpty) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(
@@ -88,13 +95,13 @@ class LoanTabScreen extends StatelessWidget {
                     child: Text('noLoans'.tr),
                   );
                 }
-        
+
                 return Column(
                   children: List.generate(list.length, (index) {
                     final loan = list[index];
                     return Container(
                       margin: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 4),
+                          horizontal: 20, vertical: 8),
                       child: LoanCardWidget(
                         loanId: loan.id!,
                         loanName: loan.name,
@@ -108,7 +115,7 @@ class LoanTabScreen extends StatelessWidget {
                   }),
                 );
               }),
-        
+
               const SizedBox(height: 60),
             ],
           ),
