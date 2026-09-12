@@ -110,6 +110,8 @@ class DashboardTabScreen extends StatelessWidget {
             /// Recent transactions list
             Expanded(
               child: RefreshIndicator(
+                backgroundColor: Theme.of(context).colorScheme.onSurface,
+                color: BaseColors.primary,
                 onRefresh: () => controller.refreshDashboard(),
                 child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 16),

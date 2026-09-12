@@ -11,6 +11,7 @@ class PaymentRowWidget extends StatelessWidget {
   final LoanPayment payment;
   final String currency;
   final Color backgroundColor;
+  final Color? selectedTextColor;
   final IconData icon;
   final VoidCallback onTap;
 
@@ -19,6 +20,7 @@ class PaymentRowWidget extends StatelessWidget {
     required this.payment,
     required this.currency,
     required this.backgroundColor,
+    this.selectedTextColor,
     required this.icon,
     required this.onTap,
   });
@@ -50,11 +52,24 @@ class PaymentRowWidget extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Text(payment.label, style: Theme.of(context).textTheme.bodySmall),
+              Text(payment.label,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall!
+                      .copyWith(color: selectedTextColor)),
               const Spacer(),
-              Text('$amountText $cur', style: Theme.of(context).textTheme.bodySmall),
+              Text('$amountText $cur',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall!
+                      .copyWith(color: selectedTextColor)),
               const Spacer(),
-              Text(dateText, textAlign: TextAlign.right, style: Theme.of(context).textTheme.bodySmall),
+              Text(dateText,
+                  textAlign: TextAlign.right,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall!
+                      .copyWith(color: selectedTextColor)),
               const SizedBox(width: 6),
               CircleAvatar(
                 radius: 16,

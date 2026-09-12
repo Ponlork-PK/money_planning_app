@@ -41,6 +41,8 @@ class ReportTabScreen extends StatelessWidget {
   Widget _buildBody(BuildContext context) {
     return AppPageLayout(
       child: RefreshIndicator(
+        backgroundColor: Theme.of(context).colorScheme.onSurface,
+        color: BaseColors.primary,
         onRefresh: () => controller.loadReport(),
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),

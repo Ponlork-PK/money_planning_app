@@ -22,7 +22,11 @@ class LoanDetailsScreen extends StatelessWidget {
           onPressed: () => Get.back(),
           icon: const Icon(Icons.arrow_back),
         ),
-        title: Text('loanDetailTitle'.tr),
+        title: Text('loanDetailTitle'.tr,
+            style: Theme.of(context)
+                .textTheme
+                .titleLarge!
+                .copyWith(color: BaseColors.white)),
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
@@ -68,7 +72,6 @@ class LoanDetailsScreen extends StatelessWidget {
                   children: [
                     _currentLoanCard(context: context, loan: loan),
                     _loanSummaryCard(context: context, loan: loan),
-
                     Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 8),
@@ -76,11 +79,10 @@ class LoanDetailsScreen extends StatelessWidget {
                         'paymentSchedule'.tr,
                         style: Theme.of(context)
                             .textTheme
-                            .bodyMedium
+                            .bodyLarge
                             ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                     ),
-
                     Obx(() {
                       final list = controller.payments;
                       if (list.isEmpty) {
@@ -95,27 +97,26 @@ class LoanDetailsScreen extends StatelessWidget {
                         children: list.map((p) {
                           final isPaid = p.status == PaymentStatus.paid;
                           return Container(
-                            margin:
-                                const EdgeInsets.symmetric(horizontal: 16),
+                            margin: const EdgeInsets.symmetric(horizontal: 16),
                             child: PaymentRowWidget(
                               payment: p,
                               currency: loan.currencyCode,
                               onTap: () => controller.togglePaymentPaid(p),
                               backgroundColor: isPaid
                                   ? Colors.green.shade100
-                                  : Colors.grey.shade200,
+                                  : Theme.of(context).colorScheme.onSurface,
+                              selectedTextColor:
+                                  isPaid ? BaseColors.black : null,
                               icon: isPaid ? Icons.check : Icons.schedule,
                             ),
                           );
                         }).toList(),
                       );
                     }),
-
                     const SizedBox(height: 90),
                   ],
                 ),
               ),
-
               _buttons(),
             ],
           ),
@@ -124,11 +125,9 @@ class LoanDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _currentLoanCard(
-      {required BuildContext context, required Loan loan}) {
+  Widget _currentLoanCard({required BuildContext context, required Loan loan}) {
     final percent = loan.paidPercent?.clamp(0.0, 1.0);
-    final percentText =
-        '${((percent ?? 0) * 100).toStringAsFixed(0)}% Paid';
+    final percentText = '${((percent ?? 0) * 100).toStringAsFixed(0)}%';
 
     final cur = loan.currencyCode.toUpperCase();
     final balanceText = (cur == 'KHR')
@@ -144,8 +143,7 @@ class LoanDetailsScreen extends StatelessWidget {
       ),
       child: Card(
         elevation: 2,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -158,7 +156,7 @@ class LoanDetailsScreen extends StatelessWidget {
                     'currentLoan'.tr,
                     style: Theme.of(context)
                         .textTheme
-                        .bodyMedium
+                        .bodyLarge
                         ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   Text(
@@ -173,8 +171,8 @@ class LoanDetailsScreen extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 balanceText,
-                style: const TextStyle(
-                    fontSize: 32, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
               ClipRRect(
@@ -183,15 +181,28 @@ class LoanDetailsScreen extends StatelessWidget {
                   value: percent,
                   minHeight: 5,
                   backgroundColor: Colors.grey.shade300,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                      Colors.blue),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
                 ),
               ),
               const SizedBox(height: 6),
-              Text(
-                percentText,
-                style:
-                    const TextStyle(fontSize: 12, color: Colors.blue),
+              Row(
+                spacing: 5,
+                children: [
+                  Text(
+                    percentText,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall!
+                        .copyWith(color: BaseColors.primary),
+                  ),
+                  Text(
+                    'paid'.tr,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall!
+                        .copyWith(color: BaseColors.primary),
+                  ),
+                ],
               ),
             ],
           ),
@@ -200,8 +211,7 @@ class LoanDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _loanSummaryCard(
-      {required BuildContext context, required Loan loan}) {
+  Widget _loanSummaryCard({required BuildContext context, required Loan loan}) {
     String formatDate(DateTime d) => DateFormat('MMM dd, yyyy').format(d);
 
     final cur = loan.currencyCode.toUpperCase();
@@ -212,8 +222,7 @@ class LoanDetailsScreen extends StatelessWidget {
     return Card(
       elevation: 3,
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -223,7 +232,7 @@ class LoanDetailsScreen extends StatelessWidget {
               'loanSummary'.tr,
               style: Theme.of(context)
                   .textTheme
-                  .bodyMedium
+                  .bodyLarge
                   ?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
@@ -238,21 +247,17 @@ class LoanDetailsScreen extends StatelessWidget {
                     ? '-'
                     : '${loan.termMonths} ${'months'.tr}'),
             DetailRowWidget(
-                label: 'startLabel'.tr,
-                value: formatDate(loan.startDate)),
+                label: 'startLabel'.tr, value: formatDate(loan.startDate)),
             DetailRowWidget(
                 label: 'endLabel'.tr,
-                value: loan.endDate == null
-                    ? '-'
-                    : formatDate(loan.endDate!)),
+                value: loan.endDate == null ? '-' : formatDate(loan.endDate!)),
             DetailRowWidget(
                 label: 'nextRepayment'.tr,
                 value: loan.nextRepaymentDate == null
                     ? '-'
                     : formatDate(loan.nextRepaymentDate!)),
             DetailRowWidget(
-                label: 'purposeOfLoan'.tr,
-                value: loan.purpose ?? '-'),
+                label: 'purposeOfLoan'.tr, value: loan.purpose ?? '-'),
           ],
         ),
       ),
@@ -265,8 +270,7 @@ class LoanDetailsScreen extends StatelessWidget {
           right: 0,
           bottom: 10,
           child: AnimatedSlide(
-            offset: Offset(
-                0, controller.isShowButtons.value ? 0 : 1.5),
+            offset: Offset(0, controller.isShowButtons.value ? 0 : 1.5),
             duration: const Duration(milliseconds: 300),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -276,8 +280,7 @@ class LoanDetailsScreen extends StatelessWidget {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 14),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       onPressed: () => controller.onSettleEarly(),
                       child: Text('settleLoan'.tr),
@@ -287,14 +290,12 @@ class LoanDetailsScreen extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 14),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                         side: const BorderSide(color: Colors.grey),
                         backgroundColor: Colors.white,
                       ),
                       onPressed: () async {
-                        final refresh = await Get.toNamed(
-                            RoutesName.addLoan,
+                        final refresh = await Get.toNamed(RoutesName.addLoan,
                             arguments: controller.loan.value);
                         if (refresh) controller.loadLoanDetails();
                       },

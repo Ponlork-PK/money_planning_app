@@ -85,6 +85,8 @@ class TransactionTabScreen extends StatelessWidget {
           /// Transaction list
           Expanded(
             child: RefreshIndicator(
+              backgroundColor: Theme.of(context).colorScheme.onSurface,
+              color: BaseColors.primary,
               onRefresh: controller.refreshTransactions,
               child: controller.transactions.isEmpty
                   ? ListView(
@@ -103,14 +105,11 @@ class TransactionTabScreen extends StatelessWidget {
                         final price =
                             '$sign${tx.currencyCode} ${tx.amount.toStringAsFixed(2)}';
 
-                        final name =
-                            (tx.itemName?.trim().isNotEmpty == true)
-                                ? tx.itemName!.trim()
-                                : (tx.note?.trim().isNotEmpty == true)
-                                    ? tx.note!.trim()
-                                    : (tx.type == 'expense'
-                                        ? 'Expense'
-                                        : 'Income');
+                        final name = (tx.itemName?.trim().isNotEmpty == true)
+                            ? tx.itemName!.trim()
+                            : (tx.note?.trim().isNotEmpty == true)
+                                ? tx.note!.trim()
+                                : (tx.type == 'expense' ? 'Expense' : 'Income');
 
                         return Container(
                           margin: const EdgeInsets.symmetric(

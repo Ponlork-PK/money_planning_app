@@ -42,6 +42,8 @@ class LoanTabScreen extends StatelessWidget {
   Widget _buildBody(BuildContext context) {
     return AppPageLayout(
       child: RefreshIndicator(
+        backgroundColor: Theme.of(context).colorScheme.onSurface,
+        color: BaseColors.primary,
         onRefresh: () => controller.loadLoans(),
         child: SingleChildScrollView(
           controller: controller.scrollController,

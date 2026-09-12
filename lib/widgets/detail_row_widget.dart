@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:money_planning_app/utils/base_colors.dart';
 
 /// A single label–value row used in detail cards (Loan Summary, Transaction Detail).
 class DetailRowWidget extends StatelessWidget {
@@ -45,7 +44,7 @@ class DetailRowWidget extends StatelessWidget {
             style: Theme.of(context)
                 .textTheme
                 .bodySmall!
-                .copyWith(color: hasIcon ? BaseColors.textPrimary : Colors.black54),
+                .copyWith(color: Theme.of(context).colorScheme.secondary),
           ),
           const Spacer(),
           Expanded(
