@@ -89,6 +89,7 @@ class Language extends Translations {
           "repay": "next repayment",
           "paid": "Paid",
           "viewDetail": "View Details",
+          "paymentNo": "Payment",
 
           // --- Add Loan ---
           "addLoanTitle": "Add New Loan",
@@ -218,6 +219,7 @@ class Language extends Translations {
           "repay": "ថ្ងៃបង់បន្ទាប់",
           "paid": "បានបង់",
           "viewDetail": "មើលលម្អិត",
+          "paymentNo": "ទូទាត់លើកទី",
 
           // --- Add Loan ---
           "addLoanTitle": "បន្ថែមកម្ចីថ្មី",

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:get/get.dart';
 import 'package:money_planning_app/models/loans_model.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
+import 'package:money_planning_app/utils/helper.dart';
 
 /// A single payment schedule row for the Loan Detail screen.
 ///
@@ -27,9 +28,9 @@ class PaymentRowWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateText = DateFormat('MMM dd, yyyy').format(payment.date);
+    final dateText = DateHelper.formatDate(payment.date);
 
-    final cur = currency.toUpperCase().trim();
+    final cur = currency.toUpperCase().trim() == 'USD' ? 'usd'.tr : 'khr'.tr;
     final amountText = cur == 'KHR'
         ? payment.amount.toStringAsFixed(0)
         : payment.amount.toStringAsFixed(2);

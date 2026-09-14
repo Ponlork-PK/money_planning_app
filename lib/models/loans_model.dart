@@ -1,4 +1,6 @@
 // loan_model.dart
+import 'package:get/get.dart';
+
 enum PaymentStatus { paid, pending, failed }
 
 class Loan {
@@ -26,24 +28,23 @@ class Loan {
   final List<LoanPayment> schedules; // unpaid
   final List<LoanPayment> histories; // paid
 
-  const Loan({
-    this.id,
-    this.userId,
-    required this.name,
-    required this.lenderType,
-    required this.originalAmount,
-    this.currentBalance,
-    required this.interestRate,
-    required this.termMonths,
-    required this.startDate,
-    required this.endDate,
-    required this.currencyCode,
-    this.paidPercent,
-    required this.nextRepaymentDate,
-    required this.schedules,
-    required this.histories,
-    this.purpose
-  });
+  const Loan(
+      {this.id,
+      this.userId,
+      required this.name,
+      required this.lenderType,
+      required this.originalAmount,
+      this.currentBalance,
+      required this.interestRate,
+      required this.termMonths,
+      required this.startDate,
+      required this.endDate,
+      required this.currencyCode,
+      this.paidPercent,
+      required this.nextRepaymentDate,
+      required this.schedules,
+      required this.histories,
+      this.purpose});
 
   Loan copyWith({
     String? id,
@@ -121,7 +122,8 @@ class Loan {
       name: (json['lender_name'] ?? '').toString(),
       lenderType: _labelType((json['lender_type'] ?? '').toString()),
       originalAmount: (json['original_amount'] as num?)?.toDouble() ?? 0.0,
-      currentBalance: (json['original_amount'] as num?)?.toDouble() ?? 0.0, // will be recalculated in controller
+      currentBalance: (json['original_amount'] as num?)?.toDouble() ??
+          0.0, // will be recalculated in controller
       interestRate: (json['interest_rate'] as num?)?.toDouble() ?? 0.0,
       termMonths: (json['term_months'] as num?)?.toInt(),
       startDate: _parseDate(json['start_date']),
@@ -143,10 +145,12 @@ class Loan {
       'original_amount': originalAmount,
       'interest_rate': interestRate,
       'term_months': termMonths,
-      'start_date': DateTime(startDate.year, startDate.month, startDate.day).toIso8601String(),
+      'start_date': DateTime(startDate.year, startDate.month, startDate.day)
+          .toIso8601String(),
       'end_date': endDate == null
           ? null
-          : DateTime(endDate!.year, endDate!.month, endDate!.day).toIso8601String(),
+          : DateTime(endDate!.year, endDate!.month, endDate!.day)
+              .toIso8601String(),
       'currency_code': currencyCode,
       'purpose': purpose,
       'status': 'active',
@@ -188,12 +192,13 @@ class LoanPayment {
   factory LoanPayment.fromMap(Map<String, dynamic> json) {
     final paymentNo = (json['payment_no'] as num?)?.toInt() ?? 1;
     final isPaid = (json['is_paid'] as bool?) ?? false;
+    final String paymentText = 'paymentNo'.tr;
 
     return LoanPayment(
       id: (json['id'] as num?)?.toInt(),
       loanId: json['loan_id']?.toString(),
       paymentNo: paymentNo,
-      label: "Payment #$paymentNo",
+      label: "$paymentText #$paymentNo",
       amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
       date: _parseDate(json['due_date']),
       currencyCode: (json['currency_code'] ?? 'USD').toString(),
@@ -213,7 +218,9 @@ class LoanPayment {
       'amount': amount,
       'currency_code': currencyCode,
       'is_paid': status == PaymentStatus.paid,
-      'paid_at': status == PaymentStatus.paid ? DateTime.now().toUtc().toIso8601String() : null,
+      'paid_at': status == PaymentStatus.paid
+          ? DateTime.now().toUtc().toIso8601String()
+          : null,
     };
   }
 }

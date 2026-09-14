@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:money_planning_app/controllers/loan_controller/loan_detail_controller.dart';
 import 'package:money_planning_app/models/loans_model.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
+import 'package:money_planning_app/utils/helper.dart';
 import 'package:money_planning_app/utils/routes_name.dart';
 import 'package:money_planning_app/widgets/app_page_layout.dart';
 import 'package:money_planning_app/widgets/detail_row_widget.dart';
@@ -117,7 +117,7 @@ class LoanDetailsScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              _buttons(),
+              _buttons(context),
             ],
           ),
         );
@@ -129,7 +129,7 @@ class LoanDetailsScreen extends StatelessWidget {
     final percent = loan.paidPercent?.clamp(0.0, 1.0);
     final percentText = '${((percent ?? 0) * 100).toStringAsFixed(0)}%';
 
-    final cur = loan.currencyCode.toUpperCase();
+    final cur = loan.currencyCode.toUpperCase() == 'USD' ? 'usd'.tr : 'khr'.tr;
     final balanceText = (cur == 'KHR')
         ? '${loan.currentBalance?.toStringAsFixed(0)} $cur'
         : '${loan.currentBalance?.toStringAsFixed(2)} $cur';
@@ -212,9 +212,7 @@ class LoanDetailsScreen extends StatelessWidget {
   }
 
   Widget _loanSummaryCard({required BuildContext context, required Loan loan}) {
-    String formatDate(DateTime d) => DateFormat('MMM dd, yyyy').format(d);
-
-    final cur = loan.currencyCode.toUpperCase();
+    final cur = loan.currencyCode.toUpperCase() == 'USD' ? 'usd'.tr : 'khr'.tr;
     final origText = (cur == 'KHR')
         ? '${loan.originalAmount.toStringAsFixed(0)} $cur'
         : '${loan.originalAmount.toStringAsFixed(2)} $cur';
@@ -247,15 +245,14 @@ class LoanDetailsScreen extends StatelessWidget {
                     ? '-'
                     : '${loan.termMonths} ${'months'.tr}'),
             DetailRowWidget(
-                label: 'startLabel'.tr, value: formatDate(loan.startDate)),
+                label: 'startLabel'.tr,
+                value: DateHelper.formatDate(loan.startDate)),
             DetailRowWidget(
                 label: 'endLabel'.tr,
-                value: loan.endDate == null ? '-' : formatDate(loan.endDate!)),
+                value: DateHelper.formatDate(loan.endDate)),
             DetailRowWidget(
                 label: 'nextRepayment'.tr,
-                value: loan.nextRepaymentDate == null
-                    ? '-'
-                    : formatDate(loan.nextRepaymentDate!)),
+                value: DateHelper.formatDate(loan.nextRepaymentDate)),
             DetailRowWidget(
                 label: 'purposeOfLoan'.tr, value: loan.purpose ?? '-'),
           ],
@@ -264,7 +261,7 @@ class LoanDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buttons() {
+  Widget _buttons(BuildContext context) {
     return Obx(() => Positioned(
           left: 0,
           right: 0,
@@ -279,11 +276,17 @@ class LoanDetailsScreen extends StatelessWidget {
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
+                          backgroundColor: BaseColors.expense,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24))),
                       onPressed: () => controller.onSettleEarly(),
-                      child: Text('settleLoan'.tr),
+                      child: Text(
+                        'settleLoan'.tr,
+                        style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                            color: BaseColors.white,
+                            fontWeight: FontWeight.w600),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -291,15 +294,20 @@ class LoanDetailsScreen extends StatelessWidget {
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: const BorderSide(color: Colors.grey),
-                        backgroundColor: Colors.white,
+                        side: BorderSide.none,
+                        backgroundColor: BaseColors.primary,
                       ),
                       onPressed: () async {
                         final refresh = await Get.toNamed(RoutesName.addLoan,
                             arguments: controller.loan.value);
                         if (refresh) controller.loadLoanDetails();
                       },
-                      child: Text('editLoan'.tr),
+                      child: Text(
+                        'editLoan'.tr,
+                        style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                            color: BaseColors.white,
+                            fontWeight: FontWeight.w600),
+                      ),
                     ),
                   ),
                 ],
