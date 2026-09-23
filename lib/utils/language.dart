@@ -124,6 +124,7 @@ class Language extends Translations {
           "notification": "Notification",
           "usd": "USD",
           "khr": "KHR",
+          "confirm": "Confirmation",
 
           // --- Logout ---
           "logout": "Log Out",
@@ -254,6 +255,7 @@ class Language extends Translations {
           "notification": "សារដំណឹង",
           "usd": "ដុល្លារ",
           "khr": "រៀល",
+          "confirm": "បញ្ជាក់",
 
           // --- Logout ---
           "logout": "ចាកចេញ",

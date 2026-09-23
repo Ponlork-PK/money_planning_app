@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/controllers/settings_controller/settings_controller.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
+import 'package:money_planning_app/widgets/app_page_layout.dart';
+import 'package:money_planning_app/widgets/base_dialog.dart';
 
 class SettingsTabScreen extends StatelessWidget {
   SettingsTabScreen({super.key});
@@ -11,110 +13,113 @@ class SettingsTabScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(),
+      appBar: _buildAppBar(context),
       body: _buildBody(context),
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
-      title: Text("setting".tr),
+      title: Text(
+        "setting".tr,
+        style: Theme.of(context)
+            .textTheme
+            .titleLarge!
+            .copyWith(color: BaseColors.white),
+      ),
     );
   }
 
   Widget _buildBody(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.only(top: 30),
-      decoration: const BoxDecoration(color: BaseColors.primary),
-      child: Container(
-        padding: const EdgeInsets.only(top: 16),
-        decoration: const BoxDecoration(
-          color: BaseColors.background,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30),
-            topRight: Radius.circular(30),
+    return AppPageLayout(
+      child: Column(
+        spacing: 10,
+        children: [
+          _selectCurrency(context),
+          _preference(context),
+
+          // notification
+          Card(
+            elevation: 2,
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14.0, vertical: 4.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("notification".tr),
+                  Obx(() => Switch(
+                        value: controller.isNotificationEnabled.value,
+                        onChanged: controller.toggleNotification,
+                        activeThumbColor: BaseColors.activeColor,
+                      )),
+                ],
+              ),
+            ),
           ),
-        ),
-        child: Column(
-          spacing: 10,
-          children: [
-            _selectCurrency(context),
-            _preference(context),
-            
-        
-            // notification
-            Card(
-              elevation: 2,
-              margin: const EdgeInsets.symmetric(horizontal: 20),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 4.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("notification".tr),
-                    Obx(() => Switch(
-                      value: controller.isNotificationEnabled.value,
-                      onChanged: controller.toggleNotification,
-                      activeThumbColor: BaseColors.activeColor,
-                    )),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
+          const SizedBox(height: 20),
 
-            // Logout button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: Obx(() => ElevatedButton.icon(
-                  onPressed: controller.isLoggingOut.value
-                      ? null
-                      : () => _showLogoutDialog(context),
-                  icon: controller.isLoggingOut.value
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(Icons.logout, color: Colors.white),
-                  label: Text(
-                    controller.isLoggingOut.value
-                        ? 'loggingOut'.tr
-                        : 'logout'.tr,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+          // Logout button
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: Obx(() => ElevatedButton.icon(
+                    onPressed: controller.isLoggingOut.value
+                        ? null
+                        : () => BaseDialog().showDialog(
+                              context: context,
+                              title: "confirm".tr,
+                              description: 'logoutConfirm'.tr,
+                              onPressedConfirm: () {
+                                Get.back(); // close dialog
+                                controller.logout();
+                              },
+                            ),
+                    icon: controller.isLoggingOut.value
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.logout, color: Colors.white),
+                    label: Text(
+                      controller.isLoggingOut.value
+                          ? 'loggingOut'.tr
+                          : 'logout'.tr,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: BaseColors.expense,
-                    disabledBackgroundColor: BaseColors.expense.withValues(alpha: 0.6),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: BaseColors.expense,
+                      disabledBackgroundColor:
+                          BaseColors.expense.withValues(alpha: 0.6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 2,
                     ),
-                    elevation: 2,
-                  ),
-                )),
-              ),
+                  )),
             ),
+          ),
 
-            const Spacer(),
-          ],
-        ),
+          const Spacer(),
+        ],
       ),
     );
   }
 
   Widget _selectCurrency(BuildContext context) {
     return Card(
-      elevation: 2,
+      elevation: 1,
       margin: const EdgeInsets.symmetric(horizontal: 20),
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -138,7 +143,8 @@ class SettingsTabScreen extends StatelessWidget {
                   ),
                   child: Text(
                     controller.selectedCurrency.value,
-                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: BaseColors.appBarTitle),
+                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                        color: BaseColors.white, fontWeight: FontWeight.bold),
                   ),
                 )),
 
@@ -147,17 +153,26 @@ class SettingsTabScreen extends StatelessWidget {
             // ✅ Dropdown — uses canonical codes (USD / KHR) as values
             Obx(() => DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
+                    dropdownColor: Theme.of(context).colorScheme.onSurface,
                     borderRadius: BorderRadius.circular(20),
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     value: controller.selectedCurrency.value,
                     icon: const Icon(Icons.arrow_drop_down),
-                    selectedItemBuilder: (context) =>
-                            controller.currencies.map((e) => const SizedBox.shrink()).toList(),
+                    selectedItemBuilder: (context) => controller.currencies
+                        .map((e) => const SizedBox.shrink())
+                        .toList(),
                     items: controller.currencies
                         .map((c) => DropdownMenuItem<String>(
+                              alignment: AlignmentDirectional.center,
                               value: c,
                               // Show localized label, but store canonical code
-                              child: Text(c == 'USD' ? 'usd'.tr : 'khr'.tr),
+                              child: Text(
+                                c == 'USD' ? 'usd'.tr : 'khr'.tr,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge!
+                                    .copyWith(fontWeight: FontWeight.bold),
+                              ),
                             ))
                         .toList(),
                     onChanged: (val) {
@@ -184,8 +199,8 @@ class SettingsTabScreen extends StatelessWidget {
             Text(
               "preference".tr,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 14),
 
@@ -195,10 +210,10 @@ class SettingsTabScreen extends StatelessWidget {
                 Text("darkMode".tr),
                 const Spacer(),
                 Obx(() => Switch(
-                  value: controller.isDarkMode.value,
-                  onChanged: controller.toggleDarkMode,
-                  activeThumbColor: BaseColors.activeColor,
-                )),
+                      value: controller.isDarkMode.value,
+                      onChanged: controller.toggleDarkMode,
+                      activeThumbColor: BaseColors.activeColor,
+                    )),
               ],
             ),
 
@@ -218,17 +233,35 @@ class SettingsTabScreen extends StatelessWidget {
                   flex: 2,
                   child: Obx(() {
                     final currentLang = controller.language.value;
-                    final validValue = ['en', 'km'].contains(currentLang) ? currentLang : 'en';
-                    
+                    final validValue =
+                        ['en', 'km'].contains(currentLang) ? currentLang : 'en';
+
                     return DropdownButton<String>(
+                      dropdownColor: Theme.of(context).colorScheme.onSurface,
                       value: validValue,
                       isExpanded: true,
-                      underline: SizedBox(),
+                      underline: const SizedBox(),
                       borderRadius: BorderRadius.circular(12),
                       onChanged: (value) => controller.setLanguage(value!),
-                      items: const [
-                        DropdownMenuItem(value: 'en', child: Text('English')),
-                        DropdownMenuItem(value: 'km', child: Text('ខ្មែរ')),
+                      items: [
+                        DropdownMenuItem(
+                            value: 'en',
+                            child: Text(
+                              'English',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge!
+                                  .copyWith(fontWeight: FontWeight.bold),
+                            )),
+                        DropdownMenuItem(
+                            value: 'km',
+                            child: Text(
+                              'ខ្មែរ',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge!
+                                  .copyWith(fontWeight: FontWeight.bold),
+                            )),
                       ],
                     );
                   }),
@@ -237,41 +270,6 @@ class SettingsTabScreen extends StatelessWidget {
             )
           ],
         ),
-      ),
-    );
-  }
-
-  void _showLogoutDialog(BuildContext context) {
-    Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('logout'.tr),
-        content: Text('logoutConfirm'.tr),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text(
-              'cancel'.tr,
-              style: const TextStyle(color: BaseColors.textSecondary),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Get.back(); // close dialog
-              controller.logout();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: BaseColors.expense,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text(
-              'logout'.tr,
-              style: const TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
       ),
     );
   }
