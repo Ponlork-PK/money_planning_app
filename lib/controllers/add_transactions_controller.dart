@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:money_planning_app/models/transaction_item_model.dart';
 import 'package:money_planning_app/services/api_service.dart';
+import 'package:money_planning_app/utils/base_colors.dart';
 
 class AddTransactionsController extends GetxController {
   final ApiService _api = ApiService();
@@ -112,15 +113,41 @@ class AddTransactionsController extends GetxController {
     paymentMethodCtrl.text = tx.paymentMethodName ?? '';
   }
 
-  Future<void> opendDatePicker() async {
+  Future<void> opendDatePicker([BuildContext? context]) async {
+    final ctx = context ?? Get.context!;
     final now = DateTime.now();
     final initial = selectedDate.value ?? now;
+    final isDark = Theme.of(ctx).brightness == Brightness.dark;
 
     final picked = await showDatePicker(
-      context: Get.context!,
+      context: ctx,
       initialDate: initial,
       firstDate: DateTime(2000),
       lastDate: DateTime(now.year + 5),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: isDark
+                ? const ColorScheme.dark(
+                    primary: BaseColors.primary,
+                    surface: BaseColors.black,
+                    onSurface: BaseColors.white,
+                  )
+                : const ColorScheme.light(
+                    primary: BaseColors.primary,
+                    surface: BaseColors.white,
+                    onSurface: BaseColors.black,
+                  ),
+            datePickerTheme: DatePickerThemeData(
+              backgroundColor: isDark ? BaseColors.darkCard : BaseColors.white,
+              headerBackgroundColor: BaseColors.primary,
+              headerForegroundColor: BaseColors.white,
+              surfaceTintColor: Colors.transparent,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
 
     if (picked != null) selectedDate.value = picked;
@@ -182,8 +209,6 @@ class AddTransactionsController extends GetxController {
       isSaving.value = false;
     }
   }
-
-
 
   @override
   void onClose() {

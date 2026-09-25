@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:money_planning_app/controllers/loan_controller/add_loan_controller.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
+import 'package:money_planning_app/widgets/app_page_layout.dart';
 
 class AddLoanScreen extends StatelessWidget {
   AddLoanScreen({super.key});
@@ -13,70 +14,80 @@ class AddLoanScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
-      child: SafeArea(
-        top: false,
-        child: Scaffold(
-          appBar: AppBar(
-            leading: IconButton(
-              onPressed: () => Get.back(result: true),
-              icon: const Icon(Icons.arrow_back),
-            ),
-            title: Obx(() => Text(controller.isEdit.value ? 'editLoanTitle'.tr : 'addLoanTitle'.tr)),
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            onPressed: () => Get.back(result: true),
+            icon: const Icon(Icons.arrow_back),
           ),
-          body: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 10),
-                      _lenderNameCard(context),
-                      const SizedBox(height: 10),
-                      _loanTermCard(context),
-                      const SizedBox(height: 10),
-                      _purposeCard(),
-                      const SizedBox(height: 14),
+          title: Obx(() => Text(
+                controller.isEdit.value
+                    ? 'editLoanTitle'.tr
+                    : 'addLoanTitle'.tr,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleLarge!
+                    .copyWith(color: BaseColors.white),
+              )),
+        ),
+        body: AppPageLayout(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+                _lenderNameCard(context),
+                const SizedBox(height: 10),
+                _loanTermCard(context),
+                const SizedBox(height: 10),
+                _purposeCard(context),
+                const SizedBox(height: 14),
 
-                      Obx(() {
-                        final err = controller.error.value;
-                        if (err == null || err.isEmpty) return const SizedBox.shrink();
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Text(err, style: const TextStyle(color: Colors.red)),
-                        );
-                      }),
+                Obx(() {
+                  final err = controller.error.value;
+                  if (err == null || err.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(err, style: const TextStyle(color: Colors.red)),
+                  );
+                }),
 
-                      const SizedBox(height: 10),
+                const SizedBox(height: 10),
 
-                      // Save Button
-                      Container(
-                        margin: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
-                        width: double.infinity,
-                        child: Obx(() => ElevatedButton(
-                              onPressed: controller.isSaving.value ? null : controller.save,
-                              child: controller.isSaving.value
-                                  ? const SizedBox(
-                                      width: 18,
-                                      height: 18,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    )
-                                  : Text('saveLoanBtn'.tr),
-                            )),
-                      ),
-                    ],
+                // Save Button
+                SafeArea(
+                  top: false,
+                  child: Container(
+                    margin:
+                        const EdgeInsets.only(left: 16, right: 16, bottom: 20),
+                    width: double.infinity,
+                    child: Obx(() => ElevatedButton(
+                          onPressed: controller.isSaving.value
+                              ? null
+                              : controller.save,
+                          child: controller.isSaving.value
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : Text('saveLoanBtn'.tr),
+                        )),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _purposeCard() {
+  Widget _purposeCard(BuildContext context) {
     return Card(
-      elevation: 2,
+      elevation: 1,
       margin: const EdgeInsets.symmetric(horizontal: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
@@ -86,16 +97,23 @@ class AddLoanScreen extends StatelessWidget {
           children: [
             Text(
               'purposeOfLoanLabel'.tr,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyLarge!
+                  .copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             TextFormField(
-              style: TextStyle(color: BaseColors.textPrimary, fontSize: 20),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyLarge!
+                  .copyWith(color: Theme.of(context).colorScheme.secondary),
               controller: controller.purposeCtrl,
               maxLines: 5,
               decoration: InputDecoration(
                 labelText: 'enterPurposeHint'.tr,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               ),
             )
           ],
@@ -110,23 +128,30 @@ class AddLoanScreen extends StatelessWidget {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      elevation: 2,
+      elevation: 1,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('loanTermsLabel'.tr,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyLarge
+                    ?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
 
             TextFormField(
-              style: TextStyle(color: BaseColors.textPrimary, fontSize: 20),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyLarge!
+                  .copyWith(color: Theme.of(context).colorScheme.secondary),
               controller: controller.amountCtrl,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 labelText: 'amountsHint'.tr,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               ),
             ),
 
@@ -136,16 +161,22 @@ class AddLoanScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: Obx(() => _dateBox(
+                        context: context,
                         label: 'startDateLabel'.tr,
-                        text: controller.startDate.value == null ? 'selectDateHint'.tr : fmt(controller.startDate.value!),
+                        text: controller.startDate.value == null
+                            ? 'selectDateHint'.tr
+                            : fmt(controller.startDate.value!),
                         onTap: () => controller.pickStartDate(context),
                       )),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Obx(() => _dateBox(
+                        context: context,
                         label: 'endDateLabel'.tr,
-                        text: controller.endDate.value == null ? 'selectDateHint'.tr : fmt(controller.endDate.value!),
+                        text: controller.endDate.value == null
+                            ? 'selectDateHint'.tr
+                            : fmt(controller.endDate.value!),
                         onTap: () => controller.pickEndDate(context),
                       )),
                 ),
@@ -155,25 +186,31 @@ class AddLoanScreen extends StatelessWidget {
             const SizedBox(height: 10),
 
             TextFormField(
-              style: TextStyle(color: BaseColors.textPrimary, fontSize: 20
-              ),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyLarge!
+                  .copyWith(color: Theme.of(context).colorScheme.secondary),
               controller: controller.interestCtrl,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
-                labelText: 'interestRateHint'.tr,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10)
-              ),
+                  labelText: 'interestRateHint'.tr,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10)),
             ),
 
             const SizedBox(height: 10),
 
             TextFormField(
-              style: TextStyle(color: BaseColors.textPrimary, fontSize: 20),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyLarge!
+                  .copyWith(color: Theme.of(context).colorScheme.secondary),
               controller: controller.termCtrl,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 labelText: 'loanTermHint'.tr,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               ),
             ),
 
@@ -182,9 +219,9 @@ class AddLoanScreen extends StatelessWidget {
             // Currency
             Row(
               children: [
-                Text('currencyLabel'.tr, style: Theme.of(context).textTheme.bodyMedium),
+                Text('currencyLabel'.tr,
+                    style: Theme.of(context).textTheme.bodyMedium),
                 const Spacer(),
-
                 GestureDetector(
                   onTap: () => controller.setCurrency('USD'),
                   child: Obx(() => Row(
@@ -200,7 +237,7 @@ class AddLoanScreen extends StatelessWidget {
                         ],
                       )),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 24),
                 GestureDetector(
                   onTap: () => controller.setCurrency('KHR'),
                   child: Obx(() => Row(
@@ -233,7 +270,7 @@ class AddLoanScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Card(
-        elevation: 2,
+        elevation: 1,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Padding(
           padding: const EdgeInsets.all(10.0),
@@ -241,43 +278,83 @@ class AddLoanScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('loanerName'.tr,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
-
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: BaseColors.inputFieldBg,
+                  color: Theme.of(context).colorScheme.onSecondary,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Obx(() {
                   return DropdownButton<String>(
+                    dropdownColor: Theme.of(context).colorScheme.onSurface,
                     value: controller.selectedLoanType.value,
                     isExpanded: true,
                     underline: const SizedBox(),
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     borderRadius: BorderRadius.circular(16),
-                    items: const [
-                      DropdownMenuItem(value: 'bank', child: Text('Bank')),
-                      DropdownMenuItem(value: 'micro', child: Text('Micro')),
-                      DropdownMenuItem(value: 'family', child: Text('Family')),
+                    items: [
+                      DropdownMenuItem(
+                          value: 'bank',
+                          child: Text(
+                            'Bank',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyLarge!
+                                .copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .secondary),
+                          )),
+                      DropdownMenuItem(
+                          value: 'micro',
+                          child: Text(
+                            'Micro',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyLarge!
+                                .copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .secondary),
+                          )),
+                      DropdownMenuItem(
+                          value: 'family',
+                          child: Text(
+                            'Family',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyLarge!
+                                .copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .secondary),
+                          )),
                     ],
                     onChanged: (value) {
-                      if (value != null) controller.selectedLoanType.value = value;
+                      if (value != null) {
+                        controller.selectedLoanType.value = value;
+                      }
                     },
                   );
                 }),
               ),
-
               const SizedBox(height: 10),
-
               TextFormField(
-                style: TextStyle(color: BaseColors.textPrimary, fontSize: 20),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyLarge!
+                    .copyWith(color: Theme.of(context).colorScheme.secondary),
                 controller: controller.lenderNameCtrl,
-                  decoration: InputDecoration(
-                    labelText: 'lenderNameHint'.tr,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  ),
+                decoration: InputDecoration(
+                  labelText: 'lenderNameHint'.tr,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                ),
               ),
             ],
           ),
@@ -287,6 +364,7 @@ class AddLoanScreen extends StatelessWidget {
   }
 
   Widget _dateBox({
+    required BuildContext context,
     required String label,
     required String text,
     required VoidCallback onTap,
@@ -297,10 +375,17 @@ class AddLoanScreen extends StatelessWidget {
       child: InputDecorator(
         decoration: InputDecoration(
           labelText: label,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         ),
-        child: Text(text),
+        child: Text(
+          text,
+          style: Theme.of(context)
+              .textTheme
+              .bodyLarge!
+              .copyWith(color: Theme.of(context).colorScheme.secondary),
+        ),
       ),
     );
   }

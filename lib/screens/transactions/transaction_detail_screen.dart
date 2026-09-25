@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:money_planning_app/controllers/transaction_detail_controller.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
 import 'package:money_planning_app/utils/routes_name.dart';
+import 'package:money_planning_app/widgets/detail_row_widget.dart';
 
 class TransactionDetailScreen extends StatelessWidget {
   TransactionDetailScreen({super.key});
@@ -140,7 +141,7 @@ class TransactionDetailScreen extends StatelessWidget {
               ),
               child: Column(
                 children: List.generate(controller.labels.length, (index) {
-                  return _detailRow(
+                  return DetailRowWidget.withIcon(
                     icon: controller.icons[index],
                     label: controller.labels[index],
                     value: controller.values[index],
@@ -148,33 +149,6 @@ class TransactionDetailScreen extends StatelessWidget {
                 }),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _detailRow({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: Colors.grey.shade200,
-            child: Icon(icon),
-          ),
-          const SizedBox(width: 10),
-          Text(label),
-          const Spacer(),
-          Text(
-            value,
-            textAlign: TextAlign.right,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

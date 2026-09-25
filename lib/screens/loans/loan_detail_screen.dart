@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:money_planning_app/controllers/loan_controller/loan_detail_controller.dart';
 import 'package:money_planning_app/models/loans_model.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
+import 'package:money_planning_app/utils/helper.dart';
 import 'package:money_planning_app/utils/routes_name.dart';
+import 'package:money_planning_app/widgets/app_page_layout.dart';
+import 'package:money_planning_app/widgets/base_dialog.dart';
+import 'package:money_planning_app/widgets/detail_row_widget.dart';
+import 'package:money_planning_app/widgets/payment_row_widget.dart';
 
 class LoanDetailsScreen extends StatelessWidget {
   LoanDetailsScreen({super.key});
@@ -15,21 +19,21 @@ class LoanDetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(onPressed: () => Get.back(), icon: const Icon(Icons.arrow_back)),
-        title: Text('loanDetailTitle'.tr)
+        leading: IconButton(
+          onPressed: () => Get.back(),
+          icon: const Icon(Icons.arrow_back),
+        ),
+        title: Text('loanDetailTitle'.tr,
+            style: Theme.of(context)
+                .textTheme
+                .titleLarge!
+                .copyWith(color: BaseColors.white)),
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return Container(
-            width: double.infinity,
-            padding: EdgeInsets.only(top: 30),
-            color: BaseColors.primary,
-            child: Container(
-              decoration: BoxDecoration(
-                color: BaseColors.background,
-                borderRadius: BorderRadius.horizontal(left: Radius.circular(30), right: Radius.circular(30))
-              ),
-              child: const Center(child: CircularProgressIndicator())));
+          return AppPageLayout(
+            child: const Center(child: CircularProgressIndicator()),
+          );
         }
 
         final err = controller.error.value;
@@ -40,7 +44,9 @@ class LoanDetailsScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(err, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center),
+                  Text(err,
+                      style: const TextStyle(color: Colors.red),
+                      textAlign: TextAlign.center),
                   const SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: () => controller.loadLoanDetails(),
@@ -55,77 +61,65 @@ class LoanDetailsScreen extends StatelessWidget {
         final loan = controller.loan.value;
         if (loan == null) return const SizedBox.shrink();
 
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.only(top: 30),
-          color: BaseColors.primary,
-          child: RefreshIndicator(
-            onRefresh: () => controller.loadLoanDetails(),
-            child: Container(
-              padding: const EdgeInsets.only(top: 10),
-              decoration: const BoxDecoration(
-                color: BaseColors.background,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30),
-                  topRight: Radius.circular(30),
+        return AppPageLayout(
+          child: Stack(
+            children: [
+              SingleChildScrollView(
+                controller: controller.scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  spacing: 10,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _currentLoanCard(context: context, loan: loan),
+                    _loanSummaryCard(context: context, loan: loan),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      child: Text(
+                        'paymentSchedule'.tr,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyLarge
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Obx(() {
+                      final list = controller.payments;
+                      if (list.isEmpty) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          child: Text('noPaymentSchedule'.tr),
+                        );
+                      }
+
+                      return Column(
+                        children: list.map((p) {
+                          final isPaid = p.status == PaymentStatus.paid;
+                          return Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 16),
+                            child: PaymentRowWidget(
+                              payment: p,
+                              currency: loan.currencyCode,
+                              onTap: () => controller.togglePaymentPaid(p),
+                              backgroundColor: isPaid
+                                  ? Colors.green.shade100
+                                  : Theme.of(context).colorScheme.onSurface,
+                              selectedTextColor:
+                                  isPaid ? BaseColors.black : null,
+                              icon: isPaid ? Icons.check : Icons.schedule,
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    }),
+                    const SizedBox(height: 90),
+                  ],
                 ),
               ),
-              child: Stack(
-                children: [
-                  SingleChildScrollView(
-                    controller: controller.scrollController,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: Column(
-                      spacing: 10,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _currentLoanCard(context: context, loan: loan),
-                        _loanSummaryCard(context: context, loan: loan),
-            
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          child: Text(
-                            'paymentSchedule'.tr,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-            
-                        Obx(() {
-                          final list = controller.payments;
-                          if (list.isEmpty) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              child: Text('noPaymentSchedule'.tr),
-                            );
-                          }
-            
-                          return Column(
-                            children: list.map((p) {
-                              final isPaid = p.status == PaymentStatus.paid;
-            
-                              return Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 16),
-                                child: PaymentRow(
-                                  payment: p,
-                                  currency: loan.currencyCode,
-                                  onTap: () => controller.togglePaymentPaid(p),
-                                  backgroundColor: isPaid ? Colors.green.shade100 : Colors.grey.shade200,
-                                  icon: isPaid ? Icons.check : Icons.schedule,
-                                ),
-                              );
-                            }).toList(),
-                          );
-                        }),
-            
-                        const SizedBox(height: 90),
-                      ],
-                    ),
-                  ),
-            
-                  _buttons(),
-                ],
-              ),
-            ),
+              _buttons(context),
+            ],
           ),
         );
       }),
@@ -134,12 +128,12 @@ class LoanDetailsScreen extends StatelessWidget {
 
   Widget _currentLoanCard({required BuildContext context, required Loan loan}) {
     final percent = loan.paidPercent?.clamp(0.0, 1.0);
-    final percentText = '${((percent ?? 0) * 100).toStringAsFixed(0)}% Paid';
+    final percentText = '${((percent ?? 0) * 100).toStringAsFixed(0)}%';
 
-    final cur = loan.currencyCode.toUpperCase();
+    final cur = loan.currencyCode.toUpperCase() == 'USD' ? 'usd'.tr : 'khr'.tr;
     final balanceText = (cur == 'KHR')
-        ? "${loan.currentBalance?.toStringAsFixed(0)} $cur"
-        : "${loan.currentBalance?.toStringAsFixed(2)} $cur";
+        ? '${loan.currentBalance?.toStringAsFixed(0)} $cur'
+        : '${loan.currentBalance?.toStringAsFixed(2)} $cur';
 
     return Container(
       padding: const EdgeInsets.only(top: 8),
@@ -149,7 +143,7 @@ class LoanDetailsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Card(
-        elevation: 2,
+        elevation: 1,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -159,18 +153,27 @@ class LoanDetailsScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('currentLoan'.tr,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    'currentLoan'.tr,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
                   Text(
                     loan.lenderType,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
               const SizedBox(height: 6),
               Text(
                 balanceText,
-                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
               ClipRRect(
@@ -183,9 +186,24 @@ class LoanDetailsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 6),
-              Text(
-                percentText,
-                style: const TextStyle(fontSize: 12, color: Colors.blue),
+              Row(
+                spacing: 5,
+                children: [
+                  Text(
+                    percentText,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall!
+                        .copyWith(color: BaseColors.primary),
+                  ),
+                  Text(
+                    'paid'.tr,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall!
+                        .copyWith(color: BaseColors.primary),
+                  ),
+                ],
               ),
             ],
           ),
@@ -195,15 +213,13 @@ class LoanDetailsScreen extends StatelessWidget {
   }
 
   Widget _loanSummaryCard({required BuildContext context, required Loan loan}) {
-    String formatDate(DateTime d) => DateFormat('MMM dd, yyyy').format(d);
-
-    final cur = loan.currencyCode.toUpperCase();
+    final cur = loan.currencyCode.toUpperCase() == 'USD' ? 'usd'.tr : 'khr'.tr;
     final origText = (cur == 'KHR')
-        ? "${loan.originalAmount.toStringAsFixed(0)} $cur"
-        : "${loan.originalAmount.toStringAsFixed(2)} $cur";
+        ? '${loan.originalAmount.toStringAsFixed(0)} $cur'
+        : '${loan.originalAmount.toStringAsFixed(2)} $cur';
 
     return Card(
-      elevation: 3,
+      elevation: 1,
       margin: const EdgeInsets.symmetric(horizontal: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
@@ -211,24 +227,42 @@ class LoanDetailsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('loanSummary'.tr,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              'loanSummary'.tr,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyLarge
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 12),
-            _row('lenderLabel'.tr, loan.name),
-            _row('originalAmount'.tr, origText),
-            _row('interestRate'.tr, '${loan.interestRate.toStringAsFixed(1)}%'),
-            _row('loanTerm'.tr, loan.termMonths == null ? '-' : '${loan.termMonths} ${'months'.tr}'),
-            _row('startLabel'.tr, formatDate(loan.startDate)),
-            _row('endLabel'.tr, loan.endDate == null ? '-' : formatDate(loan.endDate!)),
-            _row('nextRepayment'.tr, loan.nextRepaymentDate == null ? '-' : formatDate(loan.nextRepaymentDate!)),
-            _row('purposeOfLoan'.tr, loan.purpose ?? '-')
+            DetailRowWidget(label: 'lenderLabel'.tr, value: loan.name),
+            DetailRowWidget(label: 'originalAmount'.tr, value: origText),
+            DetailRowWidget(
+                label: 'interestRate'.tr,
+                value: '${loan.interestRate.toStringAsFixed(1)}%'),
+            DetailRowWidget(
+                label: 'loanTerm'.tr,
+                value: loan.termMonths == null
+                    ? '-'
+                    : '${loan.termMonths} ${'months'.tr}'),
+            DetailRowWidget(
+                label: 'startLabel'.tr,
+                value: DateHelper.formatDate(loan.startDate)),
+            DetailRowWidget(
+                label: 'endLabel'.tr,
+                value: DateHelper.formatDate(loan.endDate)),
+            DetailRowWidget(
+                label: 'nextRepayment'.tr,
+                value: DateHelper.formatDate(loan.nextRepaymentDate)),
+            DetailRowWidget(
+                label: 'purposeOfLoan'.tr, value: loan.purpose ?? '-'),
           ],
         ),
       ),
     );
   }
 
-  Widget _buttons() {
+  Widget _buttons(BuildContext context) {
     return Obx(() => Positioned(
           left: 0,
           right: 0,
@@ -243,11 +277,24 @@ class LoanDetailsScreen extends StatelessWidget {
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                          backgroundColor: BaseColors.expense,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24))),
+                      onPressed: () => BaseDialog().showDialog(
+                        context: context,
+                        title: "confirm".tr,
+                        description: "settleLoanDesConfirm".tr,
+                        cancelTxt: "no".tr,
+                        confirmTxt: "yes".tr,
+                        onPressedConfirm: () => controller.onSettleEarly(),
                       ),
-                      onPressed: () => controller.onSettleEarly(),
-                      child: Text('settleLoan'.tr),
+                      child: Text(
+                        'settleLoan'.tr,
+                        style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                            color: BaseColors.white,
+                            fontWeight: FontWeight.w600),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -255,14 +302,20 @@ class LoanDetailsScreen extends StatelessWidget {
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: const BorderSide(color: Colors.grey),
-                        backgroundColor: Colors.white,
+                        side: BorderSide.none,
+                        backgroundColor: BaseColors.primary,
                       ),
-                      onPressed: ()async{
-                        final refresh = await Get.toNamed(RoutesName.addLoan, arguments: controller.loan.value);
-                        if(refresh) controller.loadLoanDetails();
+                      onPressed: () async {
+                        final refresh = await Get.toNamed(RoutesName.addLoan,
+                            arguments: controller.loan.value);
+                        if (refresh) controller.loadLoanDetails();
                       },
-                      child: Text('editLoan'.tr),
+                      child: Text(
+                        'editLoan'.tr,
+                        style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                            color: BaseColors.white,
+                            fontWeight: FontWeight.w600),
+                      ),
                     ),
                   ),
                 ],
@@ -270,87 +323,5 @@ class LoanDetailsScreen extends StatelessWidget {
             ),
           ),
         ));
-  }
-}
-
-/// Row for loan summary card
-Widget _row(String label, String value) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 2),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: const TextStyle(fontSize: 13, color: Colors.black54)),
-        Flexible(
-          child: Text(
-            value,
-            textAlign: TextAlign.right,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-class PaymentRow extends StatelessWidget {
-  final LoanPayment payment;
-  final String currency;
-  final Color backgroundColor;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const PaymentRow({
-    super.key,
-    required this.payment,
-    required this.currency,
-    required this.backgroundColor,
-    required this.icon,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final dateText = DateFormat('MMM dd, yyyy').format(payment.date);
-
-    final cur = currency.toUpperCase().trim();
-    final amountText = cur == 'KHR'
-        ? payment.amount.toStringAsFixed(0)
-        : payment.amount.toStringAsFixed(2);
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        padding: const EdgeInsets.only(left: 5),
-        margin: const EdgeInsets.only(bottom: 8),
-        decoration: BoxDecoration(
-          color: BaseColors.income,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Row(
-            children: [
-              Text(payment.label, style: Theme.of(context).textTheme.bodySmall),
-              const Spacer(),
-              Text("$amountText $cur", style: Theme.of(context).textTheme.bodySmall),
-              const Spacer(),
-              Text(dateText, textAlign: TextAlign.right, style: Theme.of(context).textTheme.bodySmall),
-              const SizedBox(width: 6),
-              CircleAvatar(
-                radius: 16,
-                backgroundColor: BaseColors.income,
-                child: Icon(icon, size: 20, color: Colors.white),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

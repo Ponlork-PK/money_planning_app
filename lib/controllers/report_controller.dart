@@ -2,10 +2,13 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:money_planning_app/controllers/settings_controller/settings_controller.dart';
 import 'package:money_planning_app/models/category_model.dart';
 import 'package:money_planning_app/models/transaction_item_model.dart';
 import 'package:money_planning_app/services/api_service.dart';
+import 'package:money_planning_app/services/realtime_service.dart';
 import 'package:money_planning_app/services/report_pdf_service.dart';
+import 'package:money_planning_app/utils/currency_converter.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
 
@@ -14,6 +17,7 @@ enum ReportPeriod { daily, weekly, monthly }
 class ReportController extends GetxController {
   final ApiService _api = ApiService();
   final ReportPdfService _pdfService = ReportPdfService();
+  final RealtimeService _realtime = RealtimeService();
   final isExporting = false.obs;
 
   final selectedIndex = 0.obs; // 0 daily, 1 weekly, 2 monthly
@@ -59,21 +63,22 @@ class ReportController extends GetxController {
   bool _isExpense(TransactionItemModel t) =>
       t.type.toLowerCase().trim() == 'expense';
 
-  String get _primaryCurrency => 'USD';  // Or fetch from user prefs/settings
-
-  bool _sameCurrency(TransactionItemModel t) =>
-      (t.currencyCode).toUpperCase() == _primaryCurrency.toUpperCase();
-
   // -------------------------
-  // Totals
+  // Totals — convert to the display currency selected in Settings
   // -------------------------
-  double get incomeTotal => transactions
-      .where((t) => _isIncome(t) && _sameCurrency(t))
-      .fold<double>(0.0, (sum, t) => sum + t.amount);
+  double get incomeTotal {
+    final target = SettingsController.to.selectedCurrency.value;
+    return transactions
+        .where((t) => _isIncome(t))
+        .fold<double>(0.0, (sum, t) => sum + CurrencyConverter.convert(t.amount, t.currencyCode, target));
+  }
 
-  double get expenseTotal => transactions
-      .where((t) => _isExpense(t) && _sameCurrency(t))
-      .fold<double>(0.0, (sum, t) => sum + t.amount);
+  double get expenseTotal {
+    final target = SettingsController.to.selectedCurrency.value;
+    return transactions
+        .where((t) => _isExpense(t))
+        .fold<double>(0.0, (sum, t) => sum + CurrencyConverter.convert(t.amount, t.currencyCode, target));
+  }
 
   // -------------------------
   // Expense by category
@@ -229,9 +234,30 @@ class ReportController extends GetxController {
   void onInit() {
     super.onInit();
 
+    // Realtime: auto-refresh when transactions change
+    _realtime.addTransactionListener(_onTransactionChange);
+
+    // Recompute display when currency changes (transactions already cached)
+    ever<String>(SettingsController.to.selectedCurrency, (_) {
+      // Force Obx widgets to rebuild — transactions list already loaded
+      transactions.refresh();
+      topTransactions.refresh();
+    });
+
     // reload when period changes
     ever<int>(selectedIndex, (_) => loadReport());
 
+    loadReport();
+  }
+
+  @override
+  void onClose() {
+    _realtime.removeTransactionListener(_onTransactionChange);
+    super.onClose();
+  }
+
+  void _onTransactionChange() {
+    debugPrint('[ReportController] realtime event → refreshing');
     loadReport();
   }
 
@@ -272,7 +298,7 @@ class ReportController extends GetxController {
 
   PdfColor pdfColorOfCategory(int categoryId) {
     final c = colorOfCategory(categoryId); // your existing Color
-    return PdfColor.fromInt(c.value);
+    return PdfColor.fromInt(c.toARGB32());
   }
 
 }

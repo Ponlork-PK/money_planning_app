@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/controllers/bottom_nav_controller.dart';
+import 'package:money_planning_app/controllers/settings_controller/settings_controller.dart';
 import 'package:money_planning_app/screens/loans/loan_tab_screen.dart';
 import 'package:money_planning_app/screens/settings/settings_tab_screen.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
@@ -13,6 +14,10 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Initialize SettingsController first as a permanent singleton so that
+    // DashboardController, TransactionTabController, and ReportController
+    // can always find it via SettingsController.to (Get.find).
+    Get.put(SettingsController(), permanent: true);
     final controller = Get.put(BottomNavController());
 
     final pages = [
@@ -26,17 +31,18 @@ class HomeScreen extends StatelessWidget {
     return Obx(() {
       final index = controller.currentIndex.value;
       return Scaffold(
-        backgroundColor: BaseColors.background,
+        backgroundColor: Theme.of(context).colorScheme.onSecondary,
         body: IndexedStack(
           index: index,
           children: pages,
         ),
         bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: Theme.of(context).colorScheme.onSecondary,
           currentIndex: index,
           onTap: controller.changeTab,
           type: BottomNavigationBarType.fixed,
           selectedItemColor: BaseColors.primary,
-          unselectedItemColor: BaseColors.textSecondary,
+          unselectedItemColor: Theme.of(context).colorScheme.secondary,
           showUnselectedLabels: true,
           items: [
             BottomNavigationBarItem(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/models/loans_model.dart';
 import 'package:money_planning_app/services/api_service.dart';
+import 'package:money_planning_app/utils/base_colors.dart';
 
 class AddLoanController extends GetxController {
   final ApiService _api = ApiService();
@@ -58,45 +59,93 @@ class AddLoanController extends GetxController {
   }
 
   void _bindEdit(Loan loan) {
-  isEdit.value = true;
-  editingLoanId = loan.id;
+    isEdit.value = true;
+    editingLoanId = loan.id;
 
-  lenderNameCtrl.text = loan.name;
-  amountCtrl.text = loan.originalAmount.toString();
-  interestCtrl.text = (loan.interestRate).toString();
-  termCtrl.text = loan.termMonths?.toString() ?? '';
-  purposeCtrl.text = loan.purpose ?? ""; // ✅ Add purpose to Loan model
+    lenderNameCtrl.text = loan.name;
+    amountCtrl.text = loan.originalAmount.toString();
+    interestCtrl.text = (loan.interestRate).toString();
+    termCtrl.text = loan.termMonths?.toString() ?? '';
+    purposeCtrl.text = loan.purpose ?? ""; // ✅ Add purpose to Loan model
 
-  currency.value = (loan.currencyCode).toUpperCase();
+    currency.value = (loan.currencyCode).toUpperCase();
 
-  final t = (loan.lenderType).toLowerCase().trim();
-  selectedLoanType.value = t == 'bank' ? 'bank' : t == 'micro' ? 'micro' : 'family';
+    final t = (loan.lenderType).toLowerCase().trim();
+    selectedLoanType.value = t == 'bank'
+        ? 'bank'
+        : t == 'micro'
+            ? 'micro'
+            : 'family';
 
-  startDate.value = loan.startDate;
-  endDate.value = loan.endDate;
-}
+    startDate.value = loan.startDate;
+    endDate.value = loan.endDate;
+  }
 
   void setCurrency(String value) => currency.value = value;
 
   // picker
   Future<void> pickStartDate(BuildContext context) async {
     final initial = startDate.value ?? DateTime.now();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final picked = await showDatePicker(
       context: context,
       initialDate: initial,
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
+      builder: (context, child) => Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: isDark
+                ? const ColorScheme.dark(
+                    primary: BaseColors.primary,
+                    surface: BaseColors.black,
+                    onSurface: BaseColors.white,
+                  )
+                : const ColorScheme.light(
+                    primary: BaseColors.primary,
+                    surface: BaseColors.white,
+                    onSurface: BaseColors.black,
+                  ),
+            datePickerTheme: DatePickerThemeData(
+              backgroundColor: isDark ? BaseColors.darkCard : BaseColors.white,
+              headerBackgroundColor: BaseColors.primary,
+              headerForegroundColor: BaseColors.white,
+              surfaceTintColor: Colors.transparent,
+            ),
+          ),
+          child: child!),
     );
     if (picked != null) startDate.value = picked;
   }
 
   Future<void> pickEndDate(BuildContext context) async {
     final initial = endDate.value ?? (startDate.value ?? DateTime.now());
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final picked = await showDatePicker(
       context: context,
       initialDate: initial,
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
+      builder: (context, child) => Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: isDark
+                ? const ColorScheme.dark(
+                    primary: BaseColors.primary,
+                    surface: BaseColors.black,
+                    onSurface: BaseColors.white,
+                  )
+                : const ColorScheme.light(
+                    primary: BaseColors.primary,
+                    surface: BaseColors.white,
+                    onSurface: BaseColors.black,
+                  ),
+            datePickerTheme: DatePickerThemeData(
+              backgroundColor: isDark ? BaseColors.darkCard : BaseColors.white,
+              headerBackgroundColor: BaseColors.primary,
+              headerForegroundColor: BaseColors.white,
+              surfaceTintColor: Colors.transparent,
+            ),
+          ),
+          child: child!),
     );
     if (picked != null) endDate.value = picked;
   }
@@ -137,8 +186,7 @@ class AddLoanController extends GetxController {
     }
 
     // end date optional, but if provided must be >= start
-    if (endDate.value != null &&
-        endDate.value!.isBefore(startDate.value!)) {
+    if (endDate.value != null && endDate.value!.isBefore(startDate.value!)) {
       error.value = "End date must be after start date";
       return false;
     }
@@ -183,7 +231,7 @@ class AddLoanController extends GetxController {
       if (isEdit.value && editingLoanId != null) {
         // ✅ UPDATE loan
         await _api.updateLoan(loanId: editingLoanId!, loan: draft);
-        
+
         // ✅ REGENERATE payments if term exists (NEW: always regenerate on update)
         if (term != null && term > 0) {
           final newPayments = _generateEqualMonthlyPayments(
@@ -193,15 +241,16 @@ class AddLoanController extends GetxController {
             start: startDate.value!,
             months: term,
           );
-          await _api.deleteAllPayments(loanId: editingLoanId!); // NEW: clear old
-          await _api.createLoanPayments(loanId: editingLoanId!, payments: newPayments);
+          await _api.deleteAllPayments(
+              loanId: editingLoanId!); // NEW: clear old
+          await _api.createLoanPayments(
+              loanId: editingLoanId!, payments: newPayments);
         } else {
           // No term = clear payments
           await _api.deleteAllPayments(loanId: editingLoanId!);
         }
-        
+
         Get.back(result: true);
-        
       } else {
         // ✅ CREATE new loan (your existing code)
         final created = await _api.createLoan(draft);
@@ -213,11 +262,11 @@ class AddLoanController extends GetxController {
             start: created.startDate,
             months: term,
           );
-          await _api.createLoanPayments(loanId: created.id!, payments: newPayments);
+          await _api.createLoanPayments(
+              loanId: created.id!, payments: newPayments);
         }
         Get.back(result: true);
       }
-
     } catch (e) {
       error.value = e.toString();
       Get.snackbar("Save failed", error.value!);

@@ -1,9 +1,13 @@
 import 'dart:math' as math;
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/controllers/report_controller.dart';
+import 'package:money_planning_app/controllers/settings_controller/settings_controller.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
+import 'package:money_planning_app/utils/currency_converter.dart';
+import 'package:money_planning_app/widgets/app_page_layout.dart';
+import 'package:money_planning_app/widgets/app_segmented_control.dart';
+// import 'package:money_planning_app/widgets/app_state_indicator.dart';
 
 class ReportTabScreen extends StatelessWidget {
   ReportTabScreen({super.key});
@@ -13,15 +17,27 @@ class ReportTabScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.onSecondary,
       appBar: AppBar(
-        title: Text("report".tr),
+        title: Text(
+          "report".tr,
+          style: Theme.of(context)
+              .textTheme
+              .titleLarge!
+              .copyWith(color: BaseColors.white),
+        ),
         actions: [
           Obx(() => IconButton(
-            onPressed: controller.isExporting.value ? null : () => controller.exportPdf(),
-            icon: controller.isExporting.value
-                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Icon(Icons.file_open_outlined),
-          ))
+                onPressed: controller.isExporting.value
+                    ? null
+                    : () => controller.exportPdf(),
+                icon: controller.isExporting.value
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.file_open_outlined),
+              ))
         ],
       ),
       body: _buildBody(context),
@@ -29,103 +45,47 @@ class ReportTabScreen extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.only(top: 30),
-      color: BaseColors.primary,
+    return AppPageLayout(
       child: RefreshIndicator(
+        backgroundColor: Theme.of(context).colorScheme.onSurface,
+        color: BaseColors.primary,
         onRefresh: () => controller.loadReport(),
-        child: Container(
-          padding: const EdgeInsets.only(top: 10),
-          decoration: BoxDecoration(
-            color: BaseColors.background,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(30),
-              topRight: Radius.circular(30),
-            ),
-          ),
-          child: SingleChildScrollView(
-            physics: AlwaysScrollableScrollPhysics(),
-            child: Column(
-              spacing: 10,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Obx(
-                  () => Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.only(left: 16, right: 16, top: 10),
-                    color: Colors.transparent,
-                    child: CupertinoSlidingSegmentedControl<int>(
-                      groupValue: controller.selectedIndex.value,
-                      thumbColor: BaseColors.primary,
-                      children: {
-                        0: _buildSegment(context, "daily".tr, 0),
-                        1: _buildSegment(context, "weekly".tr, 1),
-                        2: _buildSegment(context, "monthly".tr, 2),
-                      },
-                      onValueChanged: (value) {
-                        if (value != null) controller.setIndex(value);
-                      },
-                    ),
-                  ),
-                ),
-            
-                // loading / error line
-                Obx(() {
-                  if (controller.isLoading.value) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                      child: LinearProgressIndicator(minHeight: 2),
-                    );
-                  }
-                  final err = controller.error.value;
-                  if (err != null) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                      child: Text(
-                        err,
-                        style: const TextStyle(color: Colors.red),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            spacing: 10,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Period switcher
+              Obx(() => AppSegmentedControl(
+                    selectedIndex: controller.selectedIndex.value,
+                    labels: ['daily'.tr, 'weekly'.tr, 'monthly'.tr],
+                    onChanged: controller.setIndex,
+                  )),
+
+              // Loading / error
+              // Obx(() => AppStateIndicator(
+              //       isLoading: controller.isLoading.value,
+              //       error: controller.error.value,
+              //     )),
+
+              Obx(() => _buildIncomeExpenseChart(context)),
+
+              Padding(
+                padding: const EdgeInsets.only(left: 16.0, top: 6),
+                child: Text(
+                  'topTs'.tr,
+                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
-                    );
-                  }
-                  return const SizedBox.shrink();
-                }),
-            
-                Obx(() => _buildIncomeExpenseChart(context)),
-            
-                // _buildPieChart(context),
-            
-                Padding(
-                  padding: const EdgeInsets.only(left: 16.0, top: 6),
-                  child: Text(
-                    "topTs".tr,
-                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: BaseColors.textPrimary,
-                        ),
-                  ),
                 ),
-            
-                Obx(() => _buildTopTransactions()),
-                const SizedBox(height: 16),
-              ],
-            ),
+              ),
+
+              Obx(() => _buildTopTransactions()),
+              const SizedBox(height: 16),
+            ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildSegment(BuildContext context, String text, int index) {
-    final isSelected = controller.selectedIndex.value == index;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-              color: isSelected ? BaseColors.background : BaseColors.textPrimary,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            ),
       ),
     );
   }
@@ -133,6 +93,8 @@ class ReportTabScreen extends StatelessWidget {
   Widget _buildIncomeExpenseChart(BuildContext context) {
     final double income = controller.incomeTotal;
     final double expense = controller.expenseTotal;
+    final String sym =
+        CurrencyConverter.symbol(SettingsController.to.selectedCurrency.value);
 
     const double maxBarHeight = 120.0;
     final double maxVal = math.max(income, expense).toDouble();
@@ -155,7 +117,6 @@ class ReportTabScreen extends StatelessWidget {
               "in_and_exp".tr,
               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: BaseColors.textPrimary,
                   ),
             ),
             const SizedBox(height: 16),
@@ -166,13 +127,13 @@ class ReportTabScreen extends StatelessWidget {
                 _barWithLabel(
                   color: BaseColors.income,
                   label: "income".tr,
-                  amount: "\$${income.toStringAsFixed(2)}",
+                  amount: "$sym${income.toStringAsFixed(2)}",
                   height: incomeH,
                 ),
                 _barWithLabel(
                   color: BaseColors.expense,
                   label: "expense".tr,
-                  amount: "\$${expense.toStringAsFixed(2)}",
+                  amount: "$sym${expense.toStringAsFixed(2)}",
                   height: expenseH,
                 ),
               ],
@@ -183,12 +144,11 @@ class ReportTabScreen extends StatelessWidget {
     );
   }
 
-  Widget _barWithLabel({
-    required double height,
-    required Color color,
-    required String label,
-    required String amount
-  }) {
+  Widget _barWithLabel(
+      {required double height,
+      required Color color,
+      required String label,
+      required String amount}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -212,99 +172,6 @@ class ReportTabScreen extends StatelessWidget {
       ],
     );
   }
-
-  // Widget _buildPieChart(BuildContext context) {
-  //   return Obx(() {
-  //     final expenseMap = controller.expenseByCategory; // Map<int,double>
-
-  //     final legendCategories = controller.categories.where((c) {
-  //       final cid = c.id;
-  //       if (cid == null) return false;
-  //       final v = expenseMap[cid] ?? 0.0;
-  //       return v > 0.0;
-  //     }).toList();
-
-  //     return Card(
-  //       elevation: 2,
-  //       margin: const EdgeInsets.symmetric(horizontal: 16),
-  //       child: Padding(
-  //         padding: const EdgeInsets.symmetric(vertical: 12.0),
-  //         child: Column(
-  //           mainAxisSize: MainAxisSize.min,
-  //           crossAxisAlignment: CrossAxisAlignment.center,
-  //           children: [
-  //             Text(
-  //               "Spending by category",
-  //               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-  //                     fontWeight: FontWeight.bold,
-  //                     color: BaseColors.textPrimary,
-  //                   ),
-  //             ),
-  //             const SizedBox(height: 16),
-  //             Row(
-  //               mainAxisAlignment: MainAxisAlignment.center,
-  //               crossAxisAlignment: CrossAxisAlignment.center,
-  //               children: [
-  //                 SizedBox(
-  //                   height: 170,
-  //                   width: 170,
-  //                   child: PieChart(
-  //                     PieChartData(
-  //                       centerSpaceRadius: 32,
-  //                       sections: controller.sections,
-  //                       sectionsSpace: 1,
-  //                     ),
-  //                   ),
-  //                 ),
-  //                 const SizedBox(width: 8),
-  //                 if (legendCategories.isEmpty)
-  //                   Padding(
-  //                     padding: const EdgeInsets.only(left: 8.0),
-  //                     child: Text(
-  //                       "No expenses",
-  //                       style: Theme.of(context)
-  //                           .textTheme
-  //                           .bodySmall
-  //                           ?.copyWith(color: Colors.black54),
-  //                     ),
-  //                   )
-  //                 else
-  //                   Column(
-  //                     crossAxisAlignment: CrossAxisAlignment.start,
-  //                     mainAxisAlignment: MainAxisAlignment.center,
-  //                     children: legendCategories.map((c) {
-  //                       final cid = c.id!;
-  //                       final value = expenseMap[cid] ?? 0.0;
-
-  //                       return Padding(
-  //                         padding: const EdgeInsets.symmetric(vertical: 4),
-  //                         child: Row(
-  //                           children: [
-  //                             CircleAvatar(
-  //                               backgroundColor: controller.colorOfCategory(cid),
-  //                               radius: 7,
-  //                             ),
-  //                             const SizedBox(width: 6),
-  //                             Text(
-  //                               "${c.name} (\$${value.toStringAsFixed(0)})",
-  //                               style: const TextStyle(
-  //                                 fontSize: 14,
-  //                                 color: Colors.black87,
-  //                               ),
-  //                             ),
-  //                           ],
-  //                         ),
-  //                       );
-  //                     }).toList(),
-  //                   ),
-  //               ],
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     );
-  //   });
-  // }
 
   Widget _buildTopTransactions() {
     final list = controller.topTransactions;
@@ -331,7 +198,8 @@ class ReportTabScreen extends StatelessWidget {
                 ? tx.note!.trim()
                 : "Transaction";
 
-        final catName = tx.categoryName ?? controller.categoryName(tx.categoryId);
+        final catName =
+            tx.categoryName ?? controller.categoryName(tx.categoryId);
 
         return ListTile(
           onTap: () => debugPrint("Tapped ${tx.id}"),
@@ -341,9 +209,18 @@ class ReportTabScreen extends StatelessWidget {
           ),
           title: Text(
             title,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            style: Theme.of(context)
+                .textTheme
+                .bodyLarge!
+                .copyWith(color: Theme.of(context).colorScheme.surface),
           ),
-          subtitle: Text(catName),
+          subtitle: Text(
+            catName,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium!
+                .copyWith(color: Theme.of(context).colorScheme.surface),
+          ),
           trailing: Text(
             "$sign${tx.currencyCode.toUpperCase()} ${tx.amount.toStringAsFixed(2)}",
             style: TextStyle(
