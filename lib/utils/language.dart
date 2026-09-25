@@ -90,6 +90,9 @@ class Language extends Translations {
           "paid": "Paid",
           "viewDetail": "View Details",
           "paymentNo": "Payment",
+          "settleLoanDesConfirm": "Did you finish your loan?",
+          "yes": "Yes",
+          "no": "No",
 
           // --- Add Loan ---
           "addLoanTitle": "Add New Loan",
@@ -221,6 +224,9 @@ class Language extends Translations {
           "paid": "បានបង់",
           "viewDetail": "មើលលម្អិត",
           "paymentNo": "ទូទាត់លើកទី",
+          "settleLoanDesConfirm": "តើអ្នកបានបង់បញ្ចប់កម្ចីហើយមែនទេ?",
+          "yes": "បាទ/ចាស",
+          "no": "នៅទេ",
 
           // --- Add Loan ---
           "addLoanTitle": "បន្ថែមកម្ចីថ្មី",

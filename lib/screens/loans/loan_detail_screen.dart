@@ -6,6 +6,7 @@ import 'package:money_planning_app/utils/base_colors.dart';
 import 'package:money_planning_app/utils/helper.dart';
 import 'package:money_planning_app/utils/routes_name.dart';
 import 'package:money_planning_app/widgets/app_page_layout.dart';
+import 'package:money_planning_app/widgets/base_dialog.dart';
 import 'package:money_planning_app/widgets/detail_row_widget.dart';
 import 'package:money_planning_app/widgets/payment_row_widget.dart';
 
@@ -142,7 +143,7 @@ class LoanDetailsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Card(
-        elevation: 2,
+        elevation: 1,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -218,7 +219,7 @@ class LoanDetailsScreen extends StatelessWidget {
         : '${loan.originalAmount.toStringAsFixed(2)} $cur';
 
     return Card(
-      elevation: 3,
+      elevation: 1,
       margin: const EdgeInsets.symmetric(horizontal: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
@@ -280,7 +281,14 @@ class LoanDetailsScreen extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(24))),
-                      onPressed: () => controller.onSettleEarly(),
+                      onPressed: () => BaseDialog().showDialog(
+                        context: context,
+                        title: "confirm".tr,
+                        description: "settleLoanDesConfirm".tr,
+                        cancelTxt: "no".tr,
+                        confirmTxt: "yes".tr,
+                        onPressedConfirm: () => controller.onSettleEarly(),
+                      ),
                       child: Text(
                         'settleLoan'.tr,
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
