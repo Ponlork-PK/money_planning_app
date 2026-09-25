@@ -19,7 +19,13 @@ class ReportTabScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.onSecondary,
       appBar: AppBar(
-        title: Text("report".tr),
+        title: Text(
+          "report".tr,
+          style: Theme.of(context)
+              .textTheme
+              .titleLarge!
+              .copyWith(color: BaseColors.white),
+        ),
         actions: [
           Obx(() => IconButton(
                 onPressed: controller.isExporting.value

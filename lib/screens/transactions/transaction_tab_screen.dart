@@ -25,9 +25,8 @@ class TransactionTabScreen extends StatelessWidget {
   PreferredSizeWidget _buildAppBar(BuildContext context) => AppBar(
         title: Text(
           'transaction'.tr,
-          style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                color: BaseColors.appBarTitle,
-                fontWeight: FontWeight.bold,
+          style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                color: BaseColors.white,
               ),
         ),
         actions: [

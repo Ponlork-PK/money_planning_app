@@ -15,19 +15,25 @@ class AddTransactionScreen extends StatelessWidget {
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         backgroundColor: Theme.of(context).colorScheme.onSecondary,
-        appBar: _buildAppBar(),
+        appBar: _buildAppBar(context),
         body: _buildBody(context),
       ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar() => AppBar(
+  PreferredSizeWidget _buildAppBar(BuildContext context) => AppBar(
       leading: IconButton(
           onPressed: () => Get.back(result: true),
           icon: const Icon(Icons.arrow_back)),
-      title: Obx(() => Text(controller.isEdit.value
-          ? 'updateTransaction'.tr
-          : 'addTransactionTitle'.tr)));
+      title: Obx(() => Text(
+            controller.isEdit.value
+                ? 'updateTransaction'.tr
+                : 'addTransactionTitle'.tr,
+            style: Theme.of(context)
+                .textTheme
+                .titleLarge!
+                .copyWith(color: BaseColors.white),
+          )));
 
   Widget _buildBody(BuildContext context) => Container(
         width: double.infinity,

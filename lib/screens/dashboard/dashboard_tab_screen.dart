@@ -17,21 +17,16 @@ class DashboardTabScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar,
+      appBar: AppBar(
+        title: Text('dashboard'.tr,
+            style: Theme.of(context)
+                .textTheme
+                .titleLarge!
+                .copyWith(color: BaseColors.white)),
+      ),
       body: _buildBody(context),
     );
   }
-
-  get _buildAppBar => AppBar(
-        title: Text(
-          'dashboard'.tr,
-          style: const TextStyle(
-            color: BaseColors.card,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      );
 
   Widget _buildBody(BuildContext context) => AppPageLayout(
         child: Column(
