@@ -13,39 +13,33 @@ class TransactionDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(),
-      body: Obx(() => _buildBody(context)),
-      floatingActionButton: FloatingActionButton(
-        shape: OutlineInputBorder(
-          borderSide: BorderSide.none,
-          borderRadius: BorderRadius.circular(28),
-        ),
-        backgroundColor: BaseColors.primary,
-        onPressed: () async {
-          final tx = controller.transaction.value;
-          if (tx == null) return;
+        appBar: _buildAppBar(),
+        body: Obx(() => _buildBody(context)),
+        floatingActionButton: FloatingActionButton(
+          shape: OutlineInputBorder(
+            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.circular(28),
+          ),
+          backgroundColor: BaseColors.primary,
+          onPressed: () async {
+            final tx = controller.transaction.value;
+            if (tx == null) return;
 
-          final result = await Get.toNamed(
-            RoutesName.addTransaction,
-            arguments: tx
-          );
-          if (result == true) {
-            controller.fetchTransaction();
-          }
-
-        },
-        child: Icon(Icons.edit, color: BaseColors.appBarTitle),
-      )
-    );
+            final result =
+                await Get.toNamed(RoutesName.addTransaction, arguments: tx);
+            if (result == true) {
+              controller.fetchTransaction();
+            }
+          },
+          child: Icon(Icons.edit, color: BaseColors.white),
+        ));
   }
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      leading: IconButton(
-        onPressed: () => Get.back(result: true),
-        icon: const Icon(Icons.arrow_back)
-      )
-    );
+        leading: IconButton(
+            onPressed: () => Get.back(result: true),
+            icon: const Icon(Icons.arrow_back)));
   }
 
   Widget _buildBody(BuildContext context) {
@@ -80,7 +74,8 @@ class TransactionDetailScreen extends StatelessWidget {
 
     final isExpense = tx.type == 'expense';
     final sign = isExpense ? '-' : '+';
-    final amountText = "$sign${tx.currencyCode} ${tx.amount.toStringAsFixed(2)}";
+    final amountText =
+        "$sign${tx.currencyCode} ${tx.amount.toStringAsFixed(2)}";
 
     final title = (tx.itemName?.trim().isNotEmpty == true)
         ? tx.itemName!.trim()
@@ -96,24 +91,31 @@ class TransactionDetailScreen extends StatelessWidget {
           const SizedBox(height: 16),
           CircleAvatar(
             radius: 50,
-            backgroundColor: BaseColors.appBarTitle,
+            backgroundColor: BaseColors.white,
             child: Icon(
-              isExpense ? Icons.keyboard_double_arrow_down : Icons.keyboard_double_arrow_up,
+              isExpense
+                  ? Icons.keyboard_double_arrow_down
+                  : Icons.keyboard_double_arrow_up,
               size: 70,
               color: BaseColors.primary,
             ),
           ),
           const SizedBox(height: 10),
-          Text(
-            title,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium!
-                .copyWith(fontWeight: FontWeight.bold, color: Colors.white),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                  fontWeight: FontWeight.bold, color: BaseColors.white),
+            ),
           ),
           Text(
             amountText,
-            style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: BaseColors.darkTextPrimary),
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium!
+                .copyWith(color: BaseColors.white, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Container(
@@ -124,16 +126,17 @@ class TransactionDetailScreen extends StatelessWidget {
             ),
             child: Text(
               tx.type.toUpperCase(),
-              style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold, color: isExpense ? BaseColors.expense : BaseColors.income),
+              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: isExpense ? BaseColors.expense : BaseColors.income),
             ),
           ),
           const SizedBox(height: 12),
-
           Expanded(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: const BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.onSecondary,
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(26),
                   topRight: Radius.circular(26),

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:money_planning_app/controllers/search_transaction_controller.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
 import 'package:money_planning_app/utils/routes_name.dart';
+import 'package:money_planning_app/widgets/app_page_layout.dart';
 import 'package:money_planning_app/widgets/item_list_widget.dart';
 
 class SearchTransactionScreen extends StatelessWidget {
@@ -17,7 +18,7 @@ class SearchTransactionScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: Theme.of(context).colorScheme.onSecondary,
         appBar: _buildAppbar(context),
-        body: Obx(() => _buildBody()),
+        body: AppPageLayout(child: Obx(() => _buildBody())),
       ),
     );
   }

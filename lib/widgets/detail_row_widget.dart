@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:money_planning_app/utils/base_colors.dart';
 
 /// A single label–value row used in detail cards (Loan Summary, Transaction Detail).
 class DetailRowWidget extends StatelessWidget {
@@ -34,17 +35,16 @@ class DetailRowWidget extends StatelessWidget {
           if (hasIcon) ...[
             CircleAvatar(
               radius: 22,
-              backgroundColor: Colors.grey.shade200,
-              child: Icon(icon),
+              backgroundColor: Theme.of(context).colorScheme.onSurface,
+              child: Icon(icon, color: BaseColors.primary),
             ),
             const SizedBox(width: 10),
           ],
           Text(
             label,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall!
-                .copyWith(color: Theme.of(context).colorScheme.secondary),
+            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                color: Theme.of(context).colorScheme.secondary,
+                fontWeight: FontWeight.w500),
           ),
           const Spacer(),
           Expanded(
@@ -52,9 +52,9 @@ class DetailRowWidget extends StatelessWidget {
               value,
               textAlign: TextAlign.right,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.secondary),
             ),
           ),
         ],

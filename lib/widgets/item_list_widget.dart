@@ -23,12 +23,16 @@ class ItemListWidget extends StatelessWidget {
               radius: 26,
               backgroundColor: Theme.of(context).colorScheme.onSurface,
               child: Icon(icons, size: 32, color: BaseColors.iconColor)),
-          Text(itemName,
+          Expanded(
+            child: Text(
+              itemName,
+              overflow: TextOverflow.ellipsis,
               style: Theme.of(context)
                   .textTheme
                   .bodyMedium!
-                  .copyWith(fontWeight: FontWeight.bold)),
-          const Spacer(),
+                  .copyWith(fontWeight: FontWeight.bold),
+            ),
+          ),
           Text(price,
               style: Theme.of(context)
                   .textTheme
