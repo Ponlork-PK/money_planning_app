@@ -35,9 +35,10 @@ class BaseDialog {
           ElevatedButton(
             onPressed: onPressedConfirm,
             style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
               backgroundColor: BaseColors.expense,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(24),
               ),
             ),
             child: Text(

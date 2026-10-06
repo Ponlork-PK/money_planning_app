@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:money_planning_app/controllers/auth_controller.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
 import 'package:money_planning_app/utils/routes_name.dart';
+import 'package:money_planning_app/widgets/base_button.dart';
 
 class LoginScreen extends StatelessWidget {
   LoginScreen({super.key});
@@ -34,7 +35,7 @@ class LoginScreen extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 30,
-                color: Colors.white,
+                color: BaseColors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -43,8 +44,8 @@ class LoginScreen extends StatelessWidget {
               width: double.infinity,
               height: 500,
               padding: const EdgeInsets.symmetric(horizontal: 40),
-              decoration: const BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.onSecondary,
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(40),
                   topRight: Radius.circular(40),
@@ -60,7 +61,7 @@ class LoginScreen extends StatelessWidget {
 
                     TextFormField(
                       controller: controller.emailController,
-                      style: const TextStyle(color: Colors.black),
+                      style: const TextStyle(color: BaseColors.black),
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: BaseColors.inputFieldBg,
@@ -70,7 +71,9 @@ class LoginScreen extends StatelessWidget {
                         labelText: "emailLabel".tr,
                       ),
                       validator: (value) {
-                        if (value?.trim().isEmpty ?? true) return 'emailRequired'.tr;
+                        if (value?.trim().isEmpty ?? true) {
+                          return 'emailRequired'.tr;
+                        }
                         return null;
                       },
                     ),
@@ -88,7 +91,9 @@ class LoginScreen extends StatelessWidget {
                       ),
                       obscureText: true,
                       validator: (value) {
-                        if (value?.isEmpty ?? true) return 'passwordRequired'.tr;
+                        if (value?.isEmpty ?? true) {
+                          return 'passwordRequired'.tr;
+                        }
                         return null;
                       },
                     ),
@@ -104,40 +109,33 @@ class LoginScreen extends StatelessWidget {
                       );
                     }),
 
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Obx(() {
-                            final loading = controller.isLoading.value;
-                            return ElevatedButton(
-                              onPressed: loading
-                                  ? null
-                                  : () async {
-                                      if (!formKey.currentState!.validate()) return;
-                                      final email = controller.emailController.text.trim();
-                                      final password = controller.passwordController.text;
-                                      final success = await controller.signIn(email: email, password: password);
-                                      if (success) {
-                                        Get.offAllNamed(RoutesName.home);
-                                      } else {
-                                        final msg = controller.errorMessage.value.isEmpty
-                                            ? "loginFailed".tr
-                                            : controller.errorMessage.value;
-                                        Get.snackbar("login".tr, msg, snackPosition: SnackPosition.BOTTOM);
-                                      }
-                                    },
-                              child: loading
-                                  ? const SizedBox(
-                                      height: 18,
-                                      width: 18,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    )
-                                  : Text("getStart".tr),
-                            );
-                          }),
-                        ),
-                      ],
-                    ),
+                    Obx(() {
+                      final loading = controller.isLoading.value;
+                      return BaseButton(
+                        text: "getStart".tr,
+                        onPressed: loading
+                            ? null
+                            : () async {
+                                if (!formKey.currentState!.validate()) return;
+                                final email =
+                                    controller.emailController.text.trim();
+                                final password =
+                                    controller.passwordController.text;
+                                final success = await controller.signIn(
+                                    email: email, password: password);
+                                if (success) {
+                                  Get.offAllNamed(RoutesName.home);
+                                } else {
+                                  final msg =
+                                      controller.errorMessage.value.isEmpty
+                                          ? "loginFailed".tr
+                                          : controller.errorMessage.value;
+                                  Get.snackbar("login".tr, msg,
+                                      snackPosition: SnackPosition.BOTTOM);
+                                }
+                              },
+                      );
+                    }),
 
                     const Spacer(flex: 4),
                   ],

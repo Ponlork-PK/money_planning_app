@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:money_planning_app/utils/helper.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
 import 'package:money_planning_app/utils/routes_name.dart';
+import 'package:money_planning_app/widgets/base_button.dart';
 
 class LoanCardWidget extends StatelessWidget {
   final String loanId; // ✅ uuid for details route
@@ -131,7 +132,13 @@ class LoanCardWidget extends StatelessWidget {
                         .bodyMedium!
                         .copyWith(fontWeight: FontWeight.w500)),
                 const Spacer(),
-                OutlinedButton(
+                BaseButton(
+                  text: 'viewDetail'.tr,
+                  textColor: BaseColors.primary,
+                  backgroundColor: Colors.transparent,
+                  hasBorder: true,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                   onPressed: () {
                     // ✅ pass loanId for LoanDetailsController
                     Get.toNamed(
@@ -139,12 +146,7 @@ class LoanCardWidget extends StatelessWidget {
                       arguments: loanId,
                     );
                   },
-                  child: Text(
-                    'viewDetail'.tr,
-                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                        fontWeight: FontWeight.w600, color: BaseColors.primary),
-                  ),
-                ),
+                )
               ],
             ),
           ],
