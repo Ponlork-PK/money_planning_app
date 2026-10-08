@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/services/api_service.dart';
 import 'package:money_planning_app/utils/prefs.dart';
+import 'package:money_planning_app/widgets/base_dialog.dart';
 
 class AuthController extends GetxController {
   final emailController = TextEditingController();
@@ -39,6 +40,9 @@ class AuthController extends GetxController {
         return false;
       }
 
+      // Show circle progress indicator
+      BaseDialog().showCilcleProgress();
+
       // ✅ Authenticate with Supabase
       final response = await ApiService().signIn(
         email: email,
@@ -46,6 +50,8 @@ class AuthController extends GetxController {
       );
 
       if (response.user == null) {
+        // Close circle progress
+        Get.back();
         errorMessage.value = 'Login failed. Please check your credentials.';
         return false;
       }
@@ -57,8 +63,12 @@ class AuthController extends GetxController {
       );
       isLoggedIn.value = true;
 
+      // Close circle progress
+      Get.back();
       return true;
     } on Exception catch (e) {
+      // Close circle progress
+      Get.back();
       // Parse Supabase error messages into user-friendly text
       final raw = e.toString();
       if (raw.contains('Invalid login credentials') ||

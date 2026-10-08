@@ -50,4 +50,15 @@ class BaseDialog {
       ),
     );
   }
+
+  void showCilcleProgress() {
+    Get.dialog(
+        const Center(
+          child: CircularProgressIndicator(
+            color: BaseColors.primary,
+            strokeWidth: 3,
+          ),
+        ),
+        barrierDismissible: false);
+  }
 }

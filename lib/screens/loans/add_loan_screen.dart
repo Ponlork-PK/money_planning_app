@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:money_planning_app/controllers/loan_controller/add_loan_controller.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
 import 'package:money_planning_app/widgets/app_page_layout.dart';
+import 'package:money_planning_app/widgets/base_button.dart';
 
 class AddLoanScreen extends StatelessWidget {
   AddLoanScreen({super.key});
@@ -62,18 +63,11 @@ class AddLoanScreen extends StatelessWidget {
                     margin:
                         const EdgeInsets.only(left: 16, right: 16, bottom: 20),
                     width: double.infinity,
-                    child: Obx(() => ElevatedButton(
+                    child: Obx(() => BaseButton(
+                          text: 'saveLoanBtn'.tr,
                           onPressed: controller.isSaving.value
                               ? null
                               : controller.save,
-                          child: controller.isSaving.value
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child:
-                                      CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : Text('saveLoanBtn'.tr),
                         )),
                   ),
                 ),
