@@ -1,10 +1,15 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:money_planning_app/controllers/locale_controller.dart';
 import 'package:money_planning_app/services/api_service.dart';
+import 'package:money_planning_app/utils/app_languages.dart';
 import 'package:money_planning_app/utils/prefs.dart';
+import 'package:money_planning_app/widgets/base_bottom_sheet.dart';
 import 'package:money_planning_app/widgets/base_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthController extends GetxController {
+  final localeController = LocaleController.to;
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
@@ -14,6 +19,9 @@ class AuthController extends GetxController {
 
   // Auth state
   final isLoggedIn = false.obs;
+
+  late final RxString selectedCode =
+      localeController.current.value.languageCode.obs;
 
   @override
   void onInit() {
@@ -105,6 +113,102 @@ class AuthController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  // The function for change Language
+  Future<void> onPressedLanguage(BuildContext context) {
+    return BaseBottomSheet.show(
+        context: context,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton(
+                    onPressed: () async {
+                      final prefs = await SharedPreferences.getInstance();
+                      selectedCode.value =
+                          prefs.getString("settings_language") ?? '';
+                      Get.back();
+                    },
+                    child: Text("back".tr)),
+                TextButton(
+                    onPressed: () => applyChange(), child: Text("done".tr)),
+              ],
+            ),
+          ),
+          Obx(
+            () => RadioGroup<String>(
+              groupValue: selectedCode.value,
+              onChanged: selectLanguage,
+              child: Column(
+                children: List.generate(2, (index) {
+                  final lang = AppLanguages.supported[index];
+                  return RadioListTile<String>(
+                    value: lang.languageCode,
+                    title: Text(
+                      lang.name,
+                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                          color: Theme.of(context).colorScheme.secondary),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          )
+        ]);
+  }
+
+  // Just selected but not change yet
+  void selectLanguage(String? code) {
+    if (code != null) selectedCode.value = code;
+  }
+
+  Future<void> applyChange() async {
+    final code = selectedCode.value;
+    Get.back(); // close the sheet first to avoid a visible rebuild behind it
+    await localeController.changeLanguageByCode(code);
+  }
+
+  // The function for change Theme mode
+  Future<void> onPressedTheme(BuildContext context) {
+    return BaseBottomSheet.show(
+        context: context,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton(onPressed: () => Get.back(), child: Text("back".tr)),
+                TextButton(
+                    onPressed: () => applyChange(), child: Text("done".tr)),
+              ],
+            ),
+          ),
+          Obx(
+            () => RadioGroup<String>(
+              groupValue: selectedCode.value,
+              onChanged: selectLanguage,
+              child: Column(
+                children: List.generate(2, (index) {
+                  final lang = AppLanguages.supported[index];
+                  return RadioListTile<String>(
+                    value: lang.languageCode,
+                    title: Text(
+                      lang.name,
+                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                          color: Theme.of(context).colorScheme.secondary),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          )
+        ]);
   }
 
   @override

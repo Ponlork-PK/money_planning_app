@@ -19,6 +19,22 @@ class LoginScreen extends StatelessWidget {
         // Allow the scaffold to resize when the keyboard appears
         resizeToAvoidBottomInset: true,
         backgroundColor: Theme.of(context).colorScheme.onSecondary,
+        appBar: AppBar(
+          actionsPadding: EdgeInsets.only(right: 16),
+          actions: [
+            IconButton(
+              onPressed: () => controller.onPressedTheme(context),
+              icon: Icon(Icons.dark_mode),
+            ),
+            const SizedBox(
+              width: 4,
+            ),
+            IconButton(
+              onPressed: () => controller.onPressedLanguage(context),
+              icon: Icon(Icons.language),
+            )
+          ],
+        ),
         body: _buildBody(context),
       ),
     );
@@ -26,7 +42,7 @@ class LoginScreen extends StatelessWidget {
 
   Widget _buildBody(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final formMinHeight = screenHeight * 0.55;
+    final formMinHeight = screenHeight * 0.65;
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
