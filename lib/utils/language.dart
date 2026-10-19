@@ -130,6 +130,8 @@ class Language extends Translations {
           "usd": "USD",
           "khr": "KHR",
           "confirm": "Confirmation",
+          'light_mode': 'Light',
+          'dark_mode': 'Dark',
 
           // --- Logout ---
           "logout": "Log Out",
@@ -266,6 +268,8 @@ class Language extends Translations {
           "usd": "ដុល្លារ",
           "khr": "រៀល",
           "confirm": "បញ្ជាក់",
+          'light_mode': 'ភ្លឺ',
+          'dark_mode': 'ងងឹត',
 
           // --- Logout ---
           "logout": "ចាកចេញ",

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/controllers/locale_controller.dart';
+import 'package:money_planning_app/controllers/theme_controller.dart';
 import 'package:money_planning_app/services/api_service.dart';
 import 'package:money_planning_app/utils/app_languages.dart';
+import 'package:money_planning_app/utils/app_theme_options.dart';
 import 'package:money_planning_app/utils/prefs.dart';
 import 'package:money_planning_app/widgets/base_bottom_sheet.dart';
 import 'package:money_planning_app/widgets/base_dialog.dart';
@@ -10,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthController extends GetxController {
   final localeController = LocaleController.to;
+  final _themeController = ThemeController.to;
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
@@ -22,6 +25,11 @@ class AuthController extends GetxController {
 
   late final RxString selectedCode =
       localeController.current.value.languageCode.obs;
+
+  late final Rx<ThemeMode> selectedMode = _themeController.current.value.obs;
+
+  ThemeMode get appliedMode => _themeController.current.value;
+  bool get isDarkMode => appliedMode == ThemeMode.dark;
 
   @override
   void onInit() {
@@ -174,6 +182,7 @@ class AuthController extends GetxController {
 
   // The function for change Theme mode
   Future<void> onPressedTheme(BuildContext context) {
+    selectedMode.value = appliedMode;
     return BaseBottomSheet.show(
         context: context,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -185,21 +194,22 @@ class AuthController extends GetxController {
               children: [
                 TextButton(onPressed: () => Get.back(), child: Text("back".tr)),
                 TextButton(
-                    onPressed: () => applyChange(), child: Text("done".tr)),
+                    onPressed: () => applyThemeChange(),
+                    child: Text("done".tr)),
               ],
             ),
           ),
           Obx(
-            () => RadioGroup<String>(
-              groupValue: selectedCode.value,
-              onChanged: selectLanguage,
+            () => RadioGroup<ThemeMode>(
+              groupValue: selectedMode.value,
+              onChanged: selectThemeMode,
               child: Column(
                 children: List.generate(2, (index) {
-                  final lang = AppLanguages.supported[index];
-                  return RadioListTile<String>(
-                    value: lang.languageCode,
+                  final theme = AppThemeOptions.supported[index];
+                  return RadioListTile<ThemeMode>(
+                    value: theme.mode,
                     title: Text(
-                      lang.name,
+                      theme.labelKey.tr,
                       style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                           color: Theme.of(context).colorScheme.secondary),
                     ),
@@ -209,6 +219,15 @@ class AuthController extends GetxController {
             ),
           )
         ]);
+  }
+
+  void selectThemeMode(ThemeMode? mode) {
+    if (mode != null) selectedMode.value = mode;
+  }
+
+  Future<void> applyThemeChange() async {
+    Get.back();
+    await _themeController.changeTheme(selectedMode.value);
   }
 
   @override

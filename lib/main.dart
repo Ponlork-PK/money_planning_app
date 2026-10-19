@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/config/environment.dart';
 import 'package:money_planning_app/controllers/locale_controller.dart';
+import 'package:money_planning_app/controllers/theme_controller.dart';
 import 'package:money_planning_app/services/api_service.dart';
 import 'package:money_planning_app/services/realtime_service.dart';
 import 'package:money_planning_app/utils/app_languages.dart';
@@ -36,6 +37,7 @@ Future<void> main() async {
   final loggedIn = await Prefs.isLoggedIn();
   final prefs = await SharedPreferences.getInstance();
   Get.put(LocaleController(prefs), permanent: true);
+  Get.put(ThemeController(prefs), permanent: true);
 
   runApp(MyApp(isLoggedIn: loggedIn));
 }
@@ -53,7 +55,7 @@ class MyApp extends StatelessWidget {
       translations: Language(),
       locale: LocaleController.to.current.value.locale,
       fallbackLocale: AppLanguages.khmer.locale,
-      themeMode: ThemeMode.system,
+      themeMode: ThemeController.to.current.value,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       // home: LoginScreen(),

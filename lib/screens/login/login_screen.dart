@@ -22,10 +22,12 @@ class LoginScreen extends StatelessWidget {
         appBar: AppBar(
           actionsPadding: EdgeInsets.only(right: 16),
           actions: [
-            IconButton(
-              onPressed: () => controller.onPressedTheme(context),
-              icon: Icon(Icons.dark_mode),
-            ),
+            Obx(() => IconButton(
+                  onPressed: () => controller.onPressedTheme(context),
+                  icon: Icon(controller.isDarkMode
+                      ? Icons.dark_mode
+                      : Icons.light_mode),
+                )),
             const SizedBox(
               width: 4,
             ),
