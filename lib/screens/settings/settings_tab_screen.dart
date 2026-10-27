@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/controllers/settings_controller/settings_controller.dart';
+import 'package:money_planning_app/utils/app_languages.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
 import 'package:money_planning_app/widgets/app_page_layout.dart';
 import 'package:money_planning_app/widgets/base_button.dart';
@@ -183,7 +184,7 @@ class SettingsTabScreen extends StatelessWidget {
                 Text("darkMode".tr),
                 const Spacer(),
                 Obx(() => Switch(
-                      value: controller.isDarkMode.value,
+                      value: controller.isDarkMode,
                       onChanged: controller.toggleDarkMode,
                       activeThumbColor: BaseColors.activeColor,
                     )),
@@ -205,36 +206,24 @@ class SettingsTabScreen extends StatelessWidget {
                 Expanded(
                   flex: 2,
                   child: Obx(() {
-                    final currentLang = controller.language.value;
-                    final validValue =
-                        ['en', 'km'].contains(currentLang) ? currentLang : 'en';
-
                     return DropdownButton<String>(
                       dropdownColor: Theme.of(context).colorScheme.onSurface,
-                      value: validValue,
+                      value: controller.languageCode,
                       isExpanded: true,
                       underline: const SizedBox(),
                       borderRadius: BorderRadius.circular(12),
-                      onChanged: (value) => controller.setLanguage(value!),
+                      onChanged: controller.setLanguage,
                       items: [
-                        DropdownMenuItem(
-                            value: 'en',
-                            child: Text(
-                              'English',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge!
-                                  .copyWith(fontWeight: FontWeight.bold),
-                            )),
-                        DropdownMenuItem(
-                            value: 'km',
-                            child: Text(
-                              'ខ្មែរ',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge!
-                                  .copyWith(fontWeight: FontWeight.bold),
-                            )),
+                        for (final lang in AppLanguages.supported)
+                          DropdownMenuItem(
+                              value: lang.languageCode,
+                              child: Text(
+                                lang.name,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge!
+                                    .copyWith(fontWeight: FontWeight.bold),
+                              )),
                       ],
                     );
                   }),

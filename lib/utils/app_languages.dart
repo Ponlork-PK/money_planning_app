@@ -1,4 +1,3 @@
-// core/localization/app_language.dart
 import 'dart:ui';
 
 class AppLanguages {
