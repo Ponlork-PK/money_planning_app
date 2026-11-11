@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/controllers/add_transactions_controller.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
+import 'package:money_planning_app/widgets/base_button.dart';
 
 class AddTransactionScreen extends StatelessWidget {
   AddTransactionScreen({super.key});
@@ -264,31 +265,18 @@ class AddTransactionScreen extends StatelessWidget {
                 ),
 
                 // save button
-                Obx(() => SafeArea(
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: controller.isSaving.value
-                                    ? null
-                                    : () async {
-                                        await controller.submit();
-                                      },
-                                child: controller.isSaving.value
-                                    ? const SizedBox(
-                                        height: 18,
-                                        width: 18,
-                                        child: CircularProgressIndicator(
-                                            strokeWidth: 2))
-                                    : Text(controller.isEdit.value
-                                        ? 'updateBtn'.tr
-                                        : 'saveBtn'.tr),
-                              ),
-                            ),
-                          ],
-                        ),
+                Obx(() => Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      child: BaseButton(
+                        text: controller.isEdit.value
+                            ? 'updateBtn'.tr
+                            : 'saveBtn'.tr,
+                        onPressed: controller.isSaving.value
+                            ? null
+                            : () async {
+                                await controller.submit();
+                              },
                       ),
                     ))
               ],

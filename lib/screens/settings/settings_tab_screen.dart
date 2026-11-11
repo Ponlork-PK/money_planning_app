@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:money_planning_app/controllers/settings_controller/settings_controller.dart';
+import 'package:money_planning_app/utils/app_languages.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
 import 'package:money_planning_app/widgets/app_page_layout.dart';
+import 'package:money_planning_app/widgets/base_button.dart';
 import 'package:money_planning_app/widgets/base_dialog.dart';
 
 class SettingsTabScreen extends StatelessWidget {
@@ -63,51 +65,23 @@ class SettingsTabScreen extends StatelessWidget {
           // Logout button
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: Obx(() => ElevatedButton.icon(
-                    onPressed: controller.isLoggingOut.value
-                        ? null
-                        : () => BaseDialog().showDialog(
-                              context: context,
-                              title: "confirm".tr,
-                              description: 'logoutConfirm'.tr,
-                              onPressedConfirm: () {
-                                Get.back(); // close dialog
-                                controller.logout();
-                              },
-                            ),
-                    icon: controller.isLoggingOut.value
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(Icons.logout, color: Colors.white),
-                    label: Text(
-                      controller.isLoggingOut.value
-                          ? 'loggingOut'.tr
-                          : 'logout'.tr,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+            child: BaseButton(
+              text:
+                  controller.isLoggingOut.value ? 'loggingOut'.tr : 'logout'.tr,
+              textColor: BaseColors.white,
+              icon: Icons.logout,
+              backgroundColor: BaseColors.expense,
+              onPressed: controller.isLoggingOut.value
+                  ? null
+                  : () => BaseDialog().showDialog(
+                        context: context,
+                        title: "confirm".tr,
+                        description: 'logoutConfirm'.tr,
+                        onPressedConfirm: () {
+                          Get.back(); // close dialog
+                          controller.logout();
+                        },
                       ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: BaseColors.expense,
-                      disabledBackgroundColor:
-                          BaseColors.expense.withValues(alpha: 0.6),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      elevation: 2,
-                    ),
-                  )),
             ),
           ),
 
@@ -210,7 +184,7 @@ class SettingsTabScreen extends StatelessWidget {
                 Text("darkMode".tr),
                 const Spacer(),
                 Obx(() => Switch(
-                      value: controller.isDarkMode.value,
+                      value: controller.isDarkMode,
                       onChanged: controller.toggleDarkMode,
                       activeThumbColor: BaseColors.activeColor,
                     )),
@@ -232,36 +206,24 @@ class SettingsTabScreen extends StatelessWidget {
                 Expanded(
                   flex: 2,
                   child: Obx(() {
-                    final currentLang = controller.language.value;
-                    final validValue =
-                        ['en', 'km'].contains(currentLang) ? currentLang : 'en';
-
                     return DropdownButton<String>(
                       dropdownColor: Theme.of(context).colorScheme.onSurface,
-                      value: validValue,
+                      value: controller.languageCode,
                       isExpanded: true,
                       underline: const SizedBox(),
                       borderRadius: BorderRadius.circular(12),
-                      onChanged: (value) => controller.setLanguage(value!),
+                      onChanged: controller.setLanguage,
                       items: [
-                        DropdownMenuItem(
-                            value: 'en',
-                            child: Text(
-                              'English',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge!
-                                  .copyWith(fontWeight: FontWeight.bold),
-                            )),
-                        DropdownMenuItem(
-                            value: 'km',
-                            child: Text(
-                              'ខ្មែរ',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge!
-                                  .copyWith(fontWeight: FontWeight.bold),
-                            )),
+                        for (final lang in AppLanguages.supported)
+                          DropdownMenuItem(
+                              value: lang.languageCode,
+                              child: Text(
+                                lang.name,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge!
+                                    .copyWith(fontWeight: FontWeight.bold),
+                              )),
                       ],
                     );
                   }),

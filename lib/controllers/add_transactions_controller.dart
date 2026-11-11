@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:money_planning_app/models/transaction_item_model.dart';
 import 'package:money_planning_app/services/api_service.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
+import 'package:money_planning_app/widgets/base_dialog.dart';
 
 class AddTransactionsController extends GetxController {
   final ApiService _api = ApiService();
@@ -186,6 +187,9 @@ class AddTransactionsController extends GetxController {
         throw Exception('Missing transaction id for update');
       }
 
+      // Show circle progress indicator
+      BaseDialog().showCilcleProgress();
+
       final tx = TransactionItemModel(
         id: isEdit.value ? editingId : null,
         type: isExpense ? 'expense' : 'income',
@@ -202,8 +206,13 @@ class AddTransactionsController extends GetxController {
       } else {
         await _api.createTransaction(tx);
       }
+      // Close indicator
+      Get.back();
+      // Back
       Get.back(result: true);
     } catch (e) {
+      // Close indicator
+      Get.back();
       Get.snackbar('Error', e.toString().replaceAll('Exception: ', ''));
     } finally {
       isSaving.value = false;

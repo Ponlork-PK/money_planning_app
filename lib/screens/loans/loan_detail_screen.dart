@@ -6,6 +6,7 @@ import 'package:money_planning_app/utils/base_colors.dart';
 import 'package:money_planning_app/utils/helper.dart';
 import 'package:money_planning_app/utils/routes_name.dart';
 import 'package:money_planning_app/widgets/app_page_layout.dart';
+import 'package:money_planning_app/widgets/base_button.dart';
 import 'package:money_planning_app/widgets/base_dialog.dart';
 import 'package:money_planning_app/widgets/detail_row_widget.dart';
 import 'package:money_planning_app/widgets/payment_row_widget.dart';
@@ -275,12 +276,10 @@ class LoanDetailsScreen extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: BaseColors.expense,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24))),
+                    child: BaseButton(
+                      text: 'settleLoan'.tr,
+                      textColor: BaseColors.white,
+                      backgroundColor: BaseColors.expense,
                       onPressed: () => BaseDialog().showDialog(
                         context: context,
                         title: "confirm".tr,
@@ -289,35 +288,20 @@ class LoanDetailsScreen extends StatelessWidget {
                         confirmTxt: "yes".tr,
                         onPressedConfirm: () => controller.onSettleEarly(),
                       ),
-                      child: Text(
-                        'settleLoan'.tr,
-                        style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                            color: BaseColors.white,
-                            fontWeight: FontWeight.w600),
-                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: BorderSide.none,
-                        backgroundColor: BaseColors.primary,
-                      ),
+                    child: BaseButton(
+                      text: 'editLoan'.tr,
+                      textColor: BaseColors.white,
                       onPressed: () async {
                         final refresh = await Get.toNamed(RoutesName.addLoan,
                             arguments: controller.loan.value);
                         if (refresh) controller.loadLoanDetails();
                       },
-                      child: Text(
-                        'editLoan'.tr,
-                        style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                            color: BaseColors.white,
-                            fontWeight: FontWeight.w600),
-                      ),
                     ),
-                  ),
+                  )
                 ],
               ),
             ),

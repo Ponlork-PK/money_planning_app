@@ -6,6 +6,7 @@ import 'package:money_planning_app/utils/base_colors.dart';
 import 'package:money_planning_app/utils/currency_converter.dart';
 import 'package:money_planning_app/utils/routes_name.dart';
 import 'package:money_planning_app/widgets/app_page_layout.dart';
+import 'package:money_planning_app/widgets/base_button.dart';
 import 'package:money_planning_app/widgets/item_list_widget.dart';
 import 'package:money_planning_app/widgets/summary_card_widget.dart';
 
@@ -50,44 +51,17 @@ class DashboardTabScreen extends StatelessWidget {
 
             /// Add Transaction button
             Container(
-              width: double.infinity,
-              margin: const EdgeInsets.symmetric(horizontal: 40),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        final result =
-                            await Get.toNamed(RoutesName.addTransaction);
-                        if (result == true) {
-                          controller.refreshDashboard();
-                        }
-                      },
-                      child: Row(
-                        spacing: 10,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const CircleAvatar(
-                            radius: 14,
-                            backgroundColor: BaseColors.background,
-                            child: Icon(Icons.add,
-                                color: BaseColors.primary, size: 26),
-                          ),
-                          Text(
-                            'addTransaction'.tr,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium!
-                                .copyWith(
-                                    color: BaseColors.card,
-                                    fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+              margin: EdgeInsets.symmetric(horizontal: 40),
+              child: BaseButton(
+                text: 'addTransaction'.tr,
+                textColor: BaseColors.white,
+                icon: Icons.add,
+                onPressed: () async {
+                  final result = await Get.toNamed(RoutesName.addTransaction);
+                  if (result == true) {
+                    controller.refreshDashboard();
+                  }
+                },
               ),
             ),
 

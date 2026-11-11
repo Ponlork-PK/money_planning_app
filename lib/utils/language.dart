@@ -12,6 +12,8 @@ class Language extends Translations {
           "passwordRequired": "Password is required",
           "getStart": "Get Start",
           "loginFailed": "Login failed",
+          "done": "Done",
+          "back": "Back",
 
           // --- Dashboard ---
           "dashboard": "Dashboard",
@@ -128,6 +130,8 @@ class Language extends Translations {
           "usd": "USD",
           "khr": "KHR",
           "confirm": "Confirmation",
+          'light_mode': 'Light',
+          'dark_mode': 'Dark',
 
           // --- Logout ---
           "logout": "Log Out",
@@ -146,6 +150,8 @@ class Language extends Translations {
           "passwordRequired": "សូមបញ្ចូលលេខសម្ងាត់",
           "getStart": "ចូល",
           "loginFailed": "ការចូលបរាជ័យ",
+          "done": "រួចរាល់",
+          "back": "ត្រឡប់ក្រោយ",
 
           // --- Dashboard ---
           "dashboard": "ផ្ទាំងគ្រប់គ្រង",
@@ -262,6 +268,8 @@ class Language extends Translations {
           "usd": "ដុល្លារ",
           "khr": "រៀល",
           "confirm": "បញ្ជាក់",
+          'light_mode': 'ភ្លឺ',
+          'dark_mode': 'ងងឹត',
 
           // --- Logout ---
           "logout": "ចាកចេញ",

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:money_planning_app/models/loans_model.dart';
 import 'package:money_planning_app/services/api_service.dart';
 import 'package:money_planning_app/utils/base_colors.dart';
+import 'package:money_planning_app/widgets/base_dialog.dart';
 
 class AddLoanController extends GetxController {
   final ApiService _api = ApiService();
@@ -204,6 +205,9 @@ class AddLoanController extends GetxController {
     isSaving.value = true;
     error.value = null;
 
+    // Circle indicator
+    BaseDialog().showCilcleProgress();
+
     try {
       final amount = _toDouble(amountCtrl.text)!;
       final rate = _toDouble(interestCtrl.text) ?? 0.0;
@@ -250,6 +254,9 @@ class AddLoanController extends GetxController {
           await _api.deleteAllPayments(loanId: editingLoanId!);
         }
 
+        // Close Circle progress
+        Get.back();
+        // Back
         Get.back(result: true);
       } else {
         // ✅ CREATE new loan (your existing code)
@@ -265,9 +272,15 @@ class AddLoanController extends GetxController {
           await _api.createLoanPayments(
               loanId: created.id!, payments: newPayments);
         }
+
+        // Close Circle progress
+        Get.back();
+        // Back
         Get.back(result: true);
       }
     } catch (e) {
+      // Close Circle progress
+      Get.back();
       error.value = e.toString();
       Get.snackbar("Save failed", error.value!);
     } finally {
