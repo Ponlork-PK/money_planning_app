@@ -206,12 +206,12 @@ Contributions are welcome! To get started:
 5. **Open** a Pull Request
 
 Please ensure your code follows the existing project structure and passes `flutter analyze` with no issues.
-
+<!-- 
 ---
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](LICENSE). -->
 
 ---
 
