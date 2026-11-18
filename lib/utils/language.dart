@@ -35,6 +35,8 @@ class Language extends Translations {
           "addTransactionTitle": "Add Transaction",
           "updateTransaction": "Update Transaction",
           "amountLabel": "Amount",
+          "amountHintUSD": "\$0.0",
+          "amountHintKHR": "៛0.0",
           "transactionType": "Transaction Type",
           "incomeLabel": "Income",
           "expenseLabel": "Expense",
@@ -47,6 +49,11 @@ class Language extends Translations {
           "paymentMethodHint": "Cash / Card / Bank / ...",
           "saveBtn": "Save",
           "updateBtn": "Update",
+          "amountNotNull": "Amount can't be null!",
+          "amountIsNotNum": "Please input number of amount!",
+          "itemNameNotNull": "Please input item name!",
+          "paymentMethodNotNull": "Please input payment method!",
+          "invalidAmount": "Please input valid amount!",
 
           // --- Transaction Detail ---
           "txType": "Type",
@@ -173,6 +180,8 @@ class Language extends Translations {
           "addTransactionTitle": "បន្ថែមប្រតិបត្តិការ",
           "updateTransaction": "កែប្រែប្រតិបត្តិការ",
           "amountLabel": "ចំនួនទឹកប្រាក់",
+          "amountHintUSD": "\$០.០",
+          "amountHintKHR": "៛០.០",
           "transactionType": "ប្រភេទប្រតិបត្តិការ",
           "incomeLabel": "ចំណូល",
           "expenseLabel": "ចំណាយ",
@@ -185,6 +194,11 @@ class Language extends Translations {
           "paymentMethodHint": "សាច់ប្រាក់ / កាត / ធនាគារ / ...",
           "saveBtn": "រក្សាទុក",
           "updateBtn": "កែប្រែ",
+          "amountNotNull": "សូមបញ្ជូលចំនួនទឹកប្រាក់!",
+          "amountIsNotNum": "សូមបញ្ជូលចំនួនជាលេខ!",
+          "itemNameNotNull": "សូមបញ្ជូលឈ្មោះទំនិញ!",
+          "paymentMethodNotNull": "សូមបញ្ជូលវិធីបង់ប្រាក់!",
+          "invalidAmount": "សូមបញ្ជូលចំនួនដែលត្រឹមត្រូវ!",
 
           // --- Transaction Detail ---
           "txType": "ប្រភេទ",

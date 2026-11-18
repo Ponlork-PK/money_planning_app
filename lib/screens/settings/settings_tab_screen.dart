@@ -51,10 +51,13 @@ class SettingsTabScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text("notification".tr),
-                  Obx(() => Switch(
-                        value: controller.isNotificationEnabled.value,
-                        onChanged: controller.toggleNotification,
-                        activeThumbColor: BaseColors.activeColor,
+                  Obx(() => Transform.scale(
+                        scale: .9,
+                        child: Switch(
+                          value: controller.isNotificationEnabled.value,
+                          onChanged: controller.toggleNotification,
+                          activeThumbColor: BaseColors.activeColor,
+                        ),
                       )),
                 ],
               ),
@@ -183,10 +186,13 @@ class SettingsTabScreen extends StatelessWidget {
               children: [
                 Text("darkMode".tr),
                 const Spacer(),
-                Obx(() => Switch(
-                      value: controller.isDarkMode,
-                      onChanged: controller.toggleDarkMode,
-                      activeThumbColor: BaseColors.activeColor,
+                Obx(() => Transform.scale(
+                      scale: .9,
+                      child: Switch(
+                        value: controller.isDarkMode,
+                        onChanged: controller.toggleDarkMode,
+                        activeThumbColor: BaseColors.activeColor,
+                      ),
                     )),
               ],
             ),

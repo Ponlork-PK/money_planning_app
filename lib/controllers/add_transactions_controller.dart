@@ -12,6 +12,7 @@ class AddTransactionsController extends GetxController {
   // ===== Mode =====
   final isEdit = false.obs;
   String? editingId; // UUID string
+  final formKey = GlobalKey<FormState>();
 
   // ===== UI state =====
   final selectedTransactionType = 0.obs; // 0 income, 1 expense
@@ -157,31 +158,13 @@ class AddTransactionsController extends GetxController {
   double _parseAmount() {
     final raw = amountCtrl.text.trim().replaceAll(',', '');
     final v = double.tryParse(raw);
-    if (v == null || v <= 0) throw Exception('Please input valid amount');
+    if (v == null || v <= 0) throw Exception('invalidAmount'.tr);
     return v;
-  }
-
-  void _validate() {
-    _parseAmount();
-
-    if (selectedDate.value == null) {
-      throw Exception('Please select date');
-    }
-
-    if (isExpense) {
-      if (itemNameCtrl.text.trim().isEmpty) {
-        throw Exception('Item name is required for Expense');
-      }
-      if (paymentMethodCtrl.text.trim().isEmpty) {
-        throw Exception('Payment method is required for Expense');
-      }
-    }
   }
 
   Future<void> submit() async {
     try {
       isSaving.value = true;
-      _validate();
 
       if (isEdit.value && (editingId == null || editingId!.isEmpty)) {
         throw Exception('Missing transaction id for update');
@@ -192,7 +175,7 @@ class AddTransactionsController extends GetxController {
 
       final tx = TransactionItemModel(
         id: isEdit.value ? editingId : null,
-        type: isExpense ? 'expense' : 'income',
+        type: isExpense ? 'expense' : 'income', // Use small letter
         amount: _parseAmount(),
         currencyCode: selectedCurrency.value,
         transactedAt: selectedDate.value!,
